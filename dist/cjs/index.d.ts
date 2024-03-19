@@ -1,4 +1,3 @@
-import NodeWallet from "./nodewallet";
 export { default as BN } from "bn.js";
 export * as web3 from "@solana/web3.js";
 export { default as Provider, getProvider, setProvider, AnchorProvider, } from "./provider.js";
@@ -10,7 +9,6 @@ export * from "./coder/index.js";
 export * as utils from "./utils/index.js";
 export * from "./program/index.js";
 export * from "./native/index.js";
-export declare const workspace: any;
-export declare class Wallet extends NodeWallet {
-}
+export * as workspace from "./workspace.js";
+export * as Wallet from "./nodewallet.js";
 //# sourceMappingURL=index.d.ts.map
