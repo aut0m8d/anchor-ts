@@ -44,8 +44,8 @@ const workspace = new Proxy(
       // Return early if the program is in cache
       if (workspaceCache[programName]) return workspaceCache[programName];
 
-      const fs = require("fs");
-      const path = require("path");
+      const fs = require("node:fs");
+      const path = require("node:path");
 
       // Override the workspace programs if the user put them in the config.
       const anchorToml = toml.parse(fs.readFileSync("Anchor.toml"));

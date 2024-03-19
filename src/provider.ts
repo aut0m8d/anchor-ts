@@ -111,7 +111,7 @@ export class AnchorProvider implements Provider {
       throw new Error(`Provider env is not available on browser.`);
     }
 
-    const process = require("process");
+    const process = require("node:process");
     const url = process.env.ANCHOR_PROVIDER_URL;
     if (url === undefined) {
       throw new Error("ANCHOR_PROVIDER_URL is not defined");
