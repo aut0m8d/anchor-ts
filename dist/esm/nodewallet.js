@@ -1,4 +1,5 @@
 import { Buffer } from "node:buffer";
+import * as process from "node:process";
 import { Keypair, } from "@solana/web3.js";
 import { isVersionedTransaction } from "./utils/common.js";
 /**
@@ -9,7 +10,6 @@ export default class NodeWallet {
         this.payer = payer;
     }
     static local() {
-        const process = require("node:process");
         if (!process.env.ANCHOR_WALLET || process.env.ANCHOR_WALLET === "") {
             throw new Error("expected environment variable `ANCHOR_WALLET` is not set.");
         }
