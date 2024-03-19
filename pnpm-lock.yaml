@@ -7,10 +7,10 @@ settings:
 dependencies:
   '@coral-xyz/borsh':
     specifier: ^0.28.0
-    version: 0.28.0(@solana/web3.js@1.91.1)
+    version: 0.28.0(@solana/web3.js@0.0.0-development)
   '@solana/web3.js':
-    specifier: ^1.68.0
-    version: 1.91.1
+    specifier: github:aut0m8d/solana-web3.js#f8988e1d7fb9b5f7f774e412f41a3b681367d2a4
+    version: github.com/aut0m8d/solana-web3.js/f8988e1d7fb9b5f7f774e412f41a3b681367d2a4
   base64-js:
     specifier: ^1.5.1
     version: 1.5.1
@@ -620,13 +620,13 @@ packages:
     engines: {node: '>=v10.22.0'}
     dev: true
 
-  /@coral-xyz/borsh@0.28.0(@solana/web3.js@1.91.1):
+  /@coral-xyz/borsh@0.28.0(@solana/web3.js@0.0.0-development):
     resolution: {integrity: sha512-/u1VTzw7XooK7rqeD7JLUSwOyRSesPUk0U37BV9zK0axJc1q0nRbKFGFLYCQ16OtdOJTTwGfGp11Lx9B45bRCQ==}
     engines: {node: '>=10'}
     peerDependencies:
       '@solana/web3.js': ^1.68.0
     dependencies:
-      '@solana/web3.js': 1.91.1
+      '@solana/web3.js': github.com/aut0m8d/solana-web3.js/f8988e1d7fb9b5f7f774e412f41a3b681367d2a4
       bn.js: 5.2.1
       buffer-layout: 1.2.2
     dev: false
@@ -1045,30 +1045,6 @@ packages:
       buffer: 6.0.3
     dev: false
 
-  /@solana/web3.js@1.91.1:
-    resolution: {integrity: sha512-cPgjZXm688oM9cULvJ8u2VH6Qp5rvptE1N1VODVxn2mAbpZsWrvWNPjmASkMYT/HzyrtqFkPvFdSHg8Xjt7aQA==}
-    dependencies:
-      '@babel/runtime': 7.24.0
-      '@noble/curves': 1.4.0
-      '@noble/hashes': 1.4.0
-      '@solana/buffer-layout': 4.0.1
-      agentkeepalive: 4.5.0
-      bigint-buffer: 1.1.5
-      bn.js: 5.2.1
-      borsh: 0.7.0
-      bs58: 4.0.1
-      buffer: 6.0.3
-      fast-stable-stringify: 1.0.0
-      jayson: 4.1.0
-      node-fetch: 2.7.0
-      rpc-websockets: 7.9.0
-      superstruct: 0.14.2
-    transitivePeerDependencies:
-      - bufferutil
-      - encoding
-      - utf-8-validate
-    dev: false
-
   /@tootallnate/once@1.1.2:
     resolution: {integrity: sha512-RbzJvlNzmRq5c3O09UipeuXno4tA1FE6ikOjxZK0tuxVv3412l64l5t1W5pj4+rJq9vpkm/kwiR07aZXnsKPxw==}
     engines: {node: '>= 6'}
@@ -1119,7 +1095,7 @@ packages:
   /@types/connect@3.4.38:
     resolution: {integrity: sha512-K6uROf1LD88uDQqJCktA4yzL1YYAK6NgfsI0v/mTgyPKWsX1CnJ0XPSDhViejru1GcRkLWb8RlzFYJRqGUbaug==}
     dependencies:
-      '@types/node': 12.20.55
+      '@types/node': 20.11.29
     dev: false
 
   /@types/crypto-hash@1.1.2:
@@ -1182,7 +1158,6 @@ packages:
     resolution: {integrity: sha512-P99thMkD/1YkCvAtOd6/zGedKNA0p2fj4ZpjCzcNiSCBWgm3cNRTBfa/qjFnsKkkojxu4vVLtWpesnZ9+ap+gA==}
     dependencies:
       undici-types: 5.26.5
-    dev: true
 
   /@types/normalize-package-data@2.4.4:
     resolution: {integrity: sha512-37i+OaWTh9qeK4LSHPsyRC7NahnGotNuZvjLSgcPzblpHB3rrCJxAOgI5gCdKm7coonsaX1Of0ILiTcnZjbfxA==}
@@ -1213,7 +1188,7 @@ packages:
   /@types/ws@7.4.7:
     resolution: {integrity: sha512-JQbbmxZTZehdc2iszGKs5oC3NFnjeay7mtAWrdt7qNtAVK0g19muApzAy4bm9byz79xa2ZnO/BOBC2R8RC5Lww==}
     dependencies:
-      '@types/node': 12.20.55
+      '@types/node': 20.11.29
     dev: false
 
   /@types/yargs-parser@21.0.3:
@@ -4921,7 +4896,6 @@ packages:
 
   /undici-types@5.26.5:
     resolution: {integrity: sha512-JlCMO+ehdEIKqlFxk6IfVoAUVmgz7cU7zD/h9XZ0qzeosSHmUJVOzSQvvYSYWXkFXC+IfLKSIffhv0sVZup6pA==}
-    dev: true
 
   /universalify@0.2.0:
     resolution: {integrity: sha512-CJ1QgKmNg3CwvAv/kOFmtnEN05f0D/cn9QntgNOQlQF9dgvVTHj3t+8JPdjqawCHk7V/KA+fbUqzZ9XWhcqPUg==}
@@ -5220,3 +5194,29 @@ packages:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
     dev: true
+
+  github.com/aut0m8d/solana-web3.js/f8988e1d7fb9b5f7f774e412f41a3b681367d2a4:
+    resolution: {tarball: https://codeload.github.com/aut0m8d/solana-web3.js/tar.gz/f8988e1d7fb9b5f7f774e412f41a3b681367d2a4}
+    name: '@solana/web3.js'
+    version: 0.0.0-development
+    dependencies:
+      '@babel/runtime': 7.24.0
+      '@noble/curves': 1.4.0
+      '@noble/hashes': 1.4.0
+      '@solana/buffer-layout': 4.0.1
+      agentkeepalive: 4.5.0
+      bigint-buffer: 1.1.5
+      bn.js: 5.2.1
+      borsh: 0.7.0
+      bs58: 4.0.1
+      buffer: 6.0.3
+      fast-stable-stringify: 1.0.0
+      jayson: 4.1.0
+      node-fetch: 2.7.0
+      rpc-websockets: 7.9.0
+      superstruct: 0.14.2
+    transitivePeerDependencies:
+      - bufferutil
+      - encoding
+      - utf-8-validate
+    dev: false
