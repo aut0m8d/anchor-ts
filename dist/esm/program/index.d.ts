@@ -2,7 +2,7 @@ import { PublicKey } from "@solana/web3.js";
 import Provider from "../provider.js";
 import { Idl, IdlInstruction } from "../idl.js";
 import { Coder } from "../coder/index.js";
-import { RpcNamespace, InstructionNamespace, TransactionNamespace, AccountNamespace, SimulateNamespace, MethodsNamespace, ViewNamespace, IdlEvents } from "./namespace/index.js";
+import { RpcNamespace, InstructionNamespace, TransactionNamespace, AccountNamespace, SimulateNamespace, MethodsNamespace, ViewNamespace } from "./namespace/index.js";
 import { Address } from "./common.js";
 import { CustomAccountResolver } from "./accounts-resolver.js";
 export * from "./common.js";
@@ -200,19 +200,10 @@ export declare class Program<IDL extends Idl = Idl> {
     get programId(): PublicKey;
     private _programId;
     /**
-     * IDL in camelCase format to work in TypeScript.
-     *
-     * See {@link rawIdl} field if you need the original IDL.
+     * IDL defining the program's interface.
      */
     get idl(): IDL;
     private _idl;
-    /**
-     * Raw IDL i.e. the original IDL without camelCase conversion.
-     *
-     * See {@link idl} field if you need the camelCased version of the IDL.
-     */
-    get rawIdl(): Idl;
-    private _rawIdl;
     /**
      * Coder for serializing requests.
      */
@@ -264,7 +255,7 @@ export declare class Program<IDL extends Idl = Idl> {
      * @param callback  The function to invoke whenever the event is emitted from
      *                  program logs.
      */
-    addEventListener<E extends keyof IdlEvents<IDL>>(eventName: E & string, callback: (event: IdlEvents<IDL>[E], slot: number, signature: string) => void): number;
+    addEventListener(eventName: string, callback: (event: any, slot: number, signature: string) => void): number;
     /**
      * Unsubscribes from the given eventName.
      */

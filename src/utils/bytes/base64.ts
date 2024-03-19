@@ -1,9 +1,10 @@
 import { Buffer } from "node:buffer";
+import * as base64 from "base64-js";
 
 export function encode(data: Buffer): string {
-  return data.toString("base64");
+  return base64.fromByteArray(data);
 }
 
 export function decode(data: string): Buffer {
-  return Buffer.from(data, "base64");
+  return Buffer.from(base64.toByteArray(data));
 }

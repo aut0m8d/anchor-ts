@@ -5,7 +5,6 @@ import { Transaction, VersionedTransaction } from "@solana/web3.js";
  * false if in a Node process or electron app.
  */
 export const isBrowser = false;
-
 /**
  * Splits an array into chunks
  *

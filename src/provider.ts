@@ -12,7 +12,6 @@ import {
   VersionedTransaction,
   RpcResponseAndContext,
 } from "@solana/web3.js";
-import * as process from "node:process";
 import { bs58 } from "./utils/bytes/index.js";
 import { isBrowser, isVersionedTransaction } from "./utils/common.js";
 import {
@@ -64,7 +63,7 @@ export class AnchorProvider implements Provider {
   constructor(
     readonly connection: Connection,
     readonly wallet: Wallet,
-    readonly opts: ConfirmOptions = AnchorProvider.defaultOptions()
+    readonly opts: ConfirmOptions
   ) {
     this.publicKey = wallet?.publicKey;
   }
@@ -84,16 +83,13 @@ export class AnchorProvider implements Provider {
    *
    * (This api is for Node only.)
    */
-  static local(
-    url?: string,
-    opts: ConfirmOptions = AnchorProvider.defaultOptions()
-  ): AnchorProvider {
+  static local(url?: string, opts?: ConfirmOptions): AnchorProvider {
     if (isBrowser) {
       throw new Error(`Provider local is not available on browser.`);
     }
-
+    opts = opts ?? AnchorProvider.defaultOptions();
     const connection = new Connection(
-      url ?? "http://127.0.0.1:8899",
+      url ?? "http://localhost:8899",
       opts.preflightCommitment
     );
     const NodeWallet = require("./nodewallet.js").default;
@@ -112,6 +108,7 @@ export class AnchorProvider implements Provider {
       throw new Error(`Provider env is not available on browser.`);
     }
 
+    const process = require("node:process");
     const url = process.env.ANCHOR_PROVIDER_URL;
     if (url === undefined) {
       throw new Error("ANCHOR_PROVIDER_URL is not defined");
@@ -298,7 +295,7 @@ export class AnchorProvider implements Provider {
 
     let result: RpcResponseAndContext<SimulatedTransactionResponse>;
     if (isVersionedTransaction(tx)) {
-      if (signers && signers.length > 0) {
+      if (signers) {
         tx.sign(signers);
         tx = await this.wallet.signTransaction(tx);
       }
@@ -310,7 +307,7 @@ export class AnchorProvider implements Provider {
       tx.feePayer = tx.feePayer || this.wallet.publicKey;
       tx.recentBlockhash = recentBlockhash;
 
-      if (signers && signers.length > 0) {
+      if (signers) {
         tx = await this.wallet.signTransaction(tx);
       }
       result = await simulateTransaction(

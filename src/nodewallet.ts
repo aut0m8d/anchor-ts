@@ -1,5 +1,4 @@
 import { Buffer } from "node:buffer";
-import * as process from "node:process";
 import {
   Keypair,
   PublicKey,
@@ -16,6 +15,8 @@ export default class NodeWallet implements Wallet {
   constructor(readonly payer: Keypair) {}
 
   static local(): NodeWallet | never {
+    const process = require("node:process");
+
     if (!process.env.ANCHOR_WALLET || process.env.ANCHOR_WALLET === "") {
       throw new Error(
         "expected environment variable `ANCHOR_WALLET` is not set."

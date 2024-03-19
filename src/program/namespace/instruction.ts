@@ -5,10 +5,10 @@ import {
 } from "@solana/web3.js";
 import {
   Idl,
-  IdlInstructionAccountItem,
-  IdlInstructionAccounts,
+  IdlAccount,
+  IdlAccountItem,
+  IdlAccounts,
   IdlInstruction,
-  isCompositeAccounts,
 } from "../../idl.js";
 import { IdlError } from "../../error.js";
 import {
@@ -76,7 +76,7 @@ export default class InstructionNamespaceFactory {
 
   public static accountsArray(
     ctx: Accounts | undefined,
-    accounts: readonly IdlInstructionAccountItem[],
+    accounts: readonly IdlAccountItem[],
     programId: PublicKey,
     ixName?: string
   ): AccountMeta[] {
@@ -85,38 +85,42 @@ export default class InstructionNamespaceFactory {
     }
 
     return accounts
-      .map((acc) => {
-        if (isCompositeAccounts(acc)) {
+      .map((acc: IdlAccountItem) => {
+        // Nested accounts.
+        const nestedAccounts: IdlAccountItem[] | undefined =
+          "accounts" in acc ? acc.accounts : undefined;
+        if (nestedAccounts !== undefined) {
           const rpcAccs = ctx[acc.name] as Accounts;
           return InstructionNamespaceFactory.accountsArray(
             rpcAccs,
-            (acc as IdlInstructionAccounts).accounts,
+            (acc as IdlAccounts).accounts,
             programId,
             ixName
           ).flat();
-        }
+        } else {
+          const account: IdlAccount = acc as IdlAccount;
+          let pubkey: PublicKey;
+          try {
+            pubkey = translateAddress(ctx[acc.name] as Address);
+          } catch (err) {
+            throw new Error(
+              `Wrong input type for account "${
+                acc.name
+              }" in the instruction accounts object${
+                ixName !== undefined ? ' for instruction "' + ixName + '"' : ""
+              }. Expected PublicKey or string.`
+            );
+          }
 
-        let pubkey: PublicKey;
-        try {
-          pubkey = translateAddress(ctx[acc.name] as Address);
-        } catch (err) {
-          throw new Error(
-            `Wrong input type for account "${
-              acc.name
-            }" in the instruction accounts object${
-              ixName !== undefined ? ' for instruction "' + ixName + '"' : ""
-            }. Expected PublicKey or string.`
-          );
+          const optional = account.isOptional && pubkey.equals(programId);
+          const isWritable = account.isMut && !optional;
+          const isSigner = account.isSigner && !optional;
+          return {
+            pubkey,
+            isWritable,
+            isSigner,
+          };
         }
-
-        const isOptional = acc.optional && pubkey.equals(programId);
-        const isWritable = Boolean(acc.writable && !isOptional);
-        const isSigner = Boolean(acc.signer && !isOptional);
-        return {
-          pubkey,
-          isWritable,
-          isSigner,
-        };
       })
       .flat();
   }
@@ -153,7 +157,7 @@ export default class InstructionNamespaceFactory {
  */
 export type InstructionNamespace<
   IDL extends Idl = Idl,
-  I extends IdlInstruction = AllInstructions<IDL>
+  I extends IdlInstruction = IDL["instructions"][number]
 > = MakeInstructionsNamespace<
   IDL,
   I,

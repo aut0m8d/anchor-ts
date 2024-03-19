@@ -1,3 +1,4 @@
+import camelCase from "camelcase";
 import { PublicKey } from "@solana/web3.js";
 import { Coder } from "../../coder/index.js";
 import Provider from "../../provider.js";
@@ -85,9 +86,9 @@ export default class NamespaceFactory {
         viewItem,
         account,
         idl.types || [],
-        getCustomResolver?.(idlIx)
+        getCustomResolver && getCustomResolver(idlIx)
       );
-      const name = idlIx.name;
+      const name = camelCase(idlIx.name);
 
       instruction[name] = ixItem;
       transaction[name] = txItem;

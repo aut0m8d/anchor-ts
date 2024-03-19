@@ -1,5 +1,4 @@
 import { Connection, SendTransactionError, } from "@solana/web3.js";
-import * as process from "node:process";
 import { bs58 } from "./utils/bytes/index.js";
 import { isBrowser, isVersionedTransaction } from "./utils/common.js";
 import { simulateTransaction, } from "./utils/rpc.js";
@@ -13,7 +12,7 @@ export class AnchorProvider {
      * @param wallet     The wallet used to pay for and sign all transactions.
      * @param opts       Transaction confirmation options to use by default.
      */
-    constructor(connection, wallet, opts = AnchorProvider.defaultOptions()) {
+    constructor(connection, wallet, opts) {
         this.connection = connection;
         this.wallet = wallet;
         this.opts = opts;
@@ -33,11 +32,12 @@ export class AnchorProvider {
      *
      * (This api is for Node only.)
      */
-    static local(url, opts = AnchorProvider.defaultOptions()) {
+    static local(url, opts) {
         if (isBrowser) {
             throw new Error(`Provider local is not available on browser.`);
         }
-        const connection = new Connection(url !== null && url !== void 0 ? url : "http://127.0.0.1:8899", opts.preflightCommitment);
+        opts = opts !== null && opts !== void 0 ? opts : AnchorProvider.defaultOptions();
+        const connection = new Connection(url !== null && url !== void 0 ? url : "http://localhost:8899", opts.preflightCommitment);
         const NodeWallet = require("./nodewallet.js").default;
         const wallet = NodeWallet.local();
         return new AnchorProvider(connection, wallet, opts);
@@ -52,6 +52,7 @@ export class AnchorProvider {
         if (isBrowser) {
             throw new Error(`Provider env is not available on browser.`);
         }
+        const process = require("node:process");
         const url = process.env.ANCHOR_PROVIDER_URL;
         if (url === undefined) {
             throw new Error("ANCHOR_PROVIDER_URL is not defined");
@@ -204,7 +205,7 @@ export class AnchorProvider {
         let recentBlockhash = (await this.connection.getLatestBlockhash(commitment !== null && commitment !== void 0 ? commitment : this.connection.commitment)).blockhash;
         let result;
         if (isVersionedTransaction(tx)) {
-            if (signers && signers.length > 0) {
+            if (signers) {
                 tx.sign(signers);
                 tx = await this.wallet.signTransaction(tx);
             }
@@ -215,7 +216,7 @@ export class AnchorProvider {
         else {
             tx.feePayer = tx.feePayer || this.wallet.publicKey;
             tx.recentBlockhash = recentBlockhash;
-            if (signers && signers.length > 0) {
+            if (signers) {
                 tx = await this.wallet.signTransaction(tx);
             }
             result = await simulateTransaction(this.connection, tx, signers, commitment, includeAccounts);

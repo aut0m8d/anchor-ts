@@ -8,7 +8,6 @@ import { Coder } from "../../coder/index.js";
 import { Idl, IdlEvent } from "../../idl.js";
 import { translateError } from "../../error.js";
 import {
-  AllEvents,
   AllInstructions,
   IdlTypes,
   InstructionContextFn,
@@ -51,11 +50,11 @@ export default class SimulateFactory {
         throw new Error("Simulated logs not found");
       }
 
-      const events = [];
+      const events: Event<IdlEvent, IdlTypes<IDL>>[] = [];
       if (idl.events) {
         let parser = new EventParser(programId, coder);
         for (const event of parser.parseLogs(logs)) {
-          events.push(event as AllEvents<IDL>[number]);
+          events.push(event);
         }
       }
       return { events, raw: logs };
@@ -105,8 +104,12 @@ export type SimulateNamespace<
 > = MakeInstructionsNamespace<
   IDL,
   I,
-  Promise<SimulateResponse<AllEvents<IDL>[number], IdlTypes<IDL>>>
+  Promise<SimulateResponse<NullableEvents<IDL>, IdlTypes<IDL>>>
 >;
+
+type NullableEvents<IDL extends Idl> = IDL["events"] extends undefined
+  ? IdlEvent
+  : NonNullable<IDL["events"]>[number];
 
 /**
  * SimulateFn is a single method generated from an IDL. It simulates a method
@@ -120,7 +123,7 @@ export type SimulateFn<
 > = InstructionContextFn<
   IDL,
   I,
-  Promise<SimulateResponse<AllEvents<IDL>[number], IdlTypes<IDL>>>
+  Promise<SimulateResponse<NullableEvents<IDL>, IdlTypes<IDL>>>
 >;
 
 export type SimulateResponse<E extends IdlEvent, Defined> = {

@@ -1,6 +1,6 @@
 import { inflate } from "pako";
 import { getProvider } from "../provider.js";
-import { idlAddress, decodeIdlAccount, convertIdlToCamelCase, } from "../idl.js";
+import { idlAddress, decodeIdlAccount } from "../idl.js";
 import { BorshCoder } from "../coder/index.js";
 import NamespaceFactory from "./namespace/index.js";
 import { utf8 } from "../utils/bytes/index.js";
@@ -44,20 +44,10 @@ export class Program {
         return this._programId;
     }
     /**
-     * IDL in camelCase format to work in TypeScript.
-     *
-     * See {@link rawIdl} field if you need the original IDL.
+     * IDL defining the program's interface.
      */
     get idl() {
         return this._idl;
-    }
-    /**
-     * Raw IDL i.e. the original IDL without camelCase conversion.
-     *
-     * See {@link idl} field if you need the camelCased version of the IDL.
-     */
-    get rawIdl() {
-        return this._rawIdl;
     }
     /**
      * Coder for serializing requests.
@@ -80,18 +70,19 @@ export class Program {
      *                          for the given instruction. This is useful for resolving
      *                          public keys of missing accounts when building instructions
      */
-    constructor(idl, programId, provider = getProvider(), coder, getCustomResolver) {
+    constructor(idl, programId, provider, coder, getCustomResolver) {
         programId = translateAddress(programId);
-        const camelCasedIdl = convertIdlToCamelCase(idl);
+        if (!provider) {
+            provider = getProvider();
+        }
         // Fields.
-        this._idl = camelCasedIdl;
-        this._rawIdl = idl;
+        this._idl = idl;
         this._provider = provider;
         this._programId = programId;
-        this._coder = coder !== null && coder !== void 0 ? coder : new BorshCoder(camelCasedIdl);
+        this._coder = coder !== null && coder !== void 0 ? coder : new BorshCoder(idl);
         this._events = new EventManager(this._programId, provider, this._coder);
         // Dynamic namespaces.
-        const [rpc, instruction, transaction, account, simulate, methods, views] = NamespaceFactory.build(camelCasedIdl, this._coder, programId, provider, getCustomResolver);
+        const [rpc, instruction, transaction, account, simulate, methods, views] = NamespaceFactory.build(idl, this._coder, programId, provider, getCustomResolver !== null && getCustomResolver !== void 0 ? getCustomResolver : (() => undefined));
         this.rpc = rpc;
         this.instruction = instruction;
         this.transaction = transaction;

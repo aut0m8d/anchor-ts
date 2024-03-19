@@ -1,3 +1,4 @@
+import camelCase from "camelcase";
 import EventEmitter from "eventemitter3";
 import {
   Signer,
@@ -11,10 +12,11 @@ import {
   Context,
 } from "@solana/web3.js";
 import Provider, { getProvider } from "../../provider.js";
-import { Idl, IdlAccount } from "../../idl.js";
+import { Idl, IdlAccountDef } from "../../idl.js";
 import { Coder, BorshCoder } from "../../coder/index.js";
 import { Subscription, Address, translateAddress } from "../common.js";
 import { AllAccountsMap, IdlAccounts } from "./types.js";
+import * as pubkeyUtil from "../../utils/pubkey.js";
 import * as rpcUtil from "../../utils/rpc.js";
 
 export default class AccountFactory {
@@ -24,21 +26,25 @@ export default class AccountFactory {
     programId: PublicKey,
     provider?: Provider
   ): AccountNamespace<IDL> {
-    return (idl.accounts ?? []).reduce((accountFns, acc) => {
-      accountFns[acc.name] = new AccountClient<IDL>(
+    const accountFns = {} as AccountNamespace<IDL>;
+
+    idl.accounts?.forEach((idlAccount) => {
+      const name = camelCase(idlAccount.name);
+      accountFns[name] = new AccountClient<IDL>(
         idl,
-        acc,
+        idlAccount,
         programId,
         provider,
         coder
       );
-      return accountFns;
-    }, {}) as AccountNamespace<IDL>;
+    });
+
+    return accountFns;
   }
 }
 
 type NullableIdlAccount<IDL extends Idl> = IDL["accounts"] extends undefined
-  ? IdlAccount
+  ? IdlAccountDef
   : NonNullable<IDL["accounts"]>[number];
 
 /**
@@ -61,17 +67,15 @@ type NullableIdlAccount<IDL extends Idl> = IDL["accounts"] extends undefined
  *
  * For the full API, see the [[AccountClient]] reference.
  */
-export type AccountNamespace<I extends Idl = Idl> = {
-  [A in keyof AllAccountsMap<I>]: AccountClient<I, A>;
+export type AccountNamespace<IDL extends Idl = Idl> = {
+  [N in keyof AllAccountsMap<IDL>]: AccountClient<IDL, N>;
 };
 
 export class AccountClient<
   IDL extends Idl = Idl,
-  A extends keyof IdlAccounts<IDL> = keyof IdlAccounts<IDL>,
-  N extends NullableIdlAccount<IDL> = NullableIdlAccount<IDL>,
-  T = IdlAccounts<IDL>[A] extends Record<string, unknown>
-    ? IdlAccounts<IDL>[A]
-    : never
+  N extends keyof IdlAccounts<IDL> = keyof IdlAccounts<IDL>,
+  A extends NullableIdlAccount<IDL> = NullableIdlAccount<IDL>,
+  T = IdlAccounts<IDL>[N]
 > {
   /**
    * Returns the number of bytes in this account.
@@ -105,11 +109,17 @@ export class AccountClient<
   }
   private _coder: Coder;
 
-  private _idlAccount: N;
+  /**
+   * Returns the idl account.
+   */
+  get idlAccount(): A {
+    return this._idlAccount;
+  }
+  private _idlAccount: A;
 
   constructor(
     idl: IDL,
-    idlAccount: N,
+    idlAccount: A,
     programId: PublicKey,
     provider?: Provider,
     coder?: Coder
@@ -118,7 +128,7 @@ export class AccountClient<
     this._programId = programId;
     this._provider = provider ?? getProvider();
     this._coder = coder ?? new BorshCoder(idl);
-    this._size = this._coder.accounts.size(idlAccount.name);
+    this._size = this._coder.accounts.size(idlAccount);
   }
 
   /**
@@ -360,6 +370,29 @@ export class AccountClient<
         ),
       programId: this._programId,
     });
+  }
+
+  /**
+   * @deprecated since version 14.0.
+   *
+   * Function returning the associated account. Args are keys to associate.
+   * Order matters.
+   */
+  async associated(...args: Array<PublicKey | Buffer>): Promise<T> {
+    const addr = await this.associatedAddress(...args);
+    return await this.fetch(addr);
+  }
+
+  /**
+   * @deprecated since version 14.0.
+   *
+   * Function returning the associated address. Args are keys to associate.
+   * Order matters.
+   */
+  async associatedAddress(
+    ...args: Array<PublicKey | Buffer>
+  ): Promise<PublicKey> {
+    return await pubkeyUtil.associated(this._programId, ...args);
   }
 
   async getAccountInfo(

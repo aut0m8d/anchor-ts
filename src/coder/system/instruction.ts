@@ -1,5 +1,6 @@
 import BN from "bn.js";
 import * as BufferLayout from "buffer-layout";
+import camelCase from "camelcase";
 import { Idl } from "../../idl.js";
 import { InstructionCoder } from "../index.js";
 
@@ -8,7 +9,7 @@ export class SystemInstructionCoder implements InstructionCoder {
   constructor(_: Idl) {}
 
   encode(ixName: string, ix: any): Buffer {
-    switch (ixName) {
+    switch (camelCase(ixName)) {
       case "createAccount": {
         return encodeCreateAccount(ix);
       }

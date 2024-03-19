@@ -1,13 +1,7 @@
 import { inflate } from "pako";
 import { PublicKey } from "@solana/web3.js";
 import Provider, { getProvider } from "../provider.js";
-import {
-  Idl,
-  idlAddress,
-  decodeIdlAccount,
-  IdlInstruction,
-  convertIdlToCamelCase,
-} from "../idl.js";
+import { Idl, idlAddress, decodeIdlAccount, IdlInstruction } from "../idl.js";
 import { Coder, BorshCoder } from "../coder/index.js";
 import NamespaceFactory, {
   RpcNamespace,
@@ -17,7 +11,6 @@ import NamespaceFactory, {
   SimulateNamespace,
   MethodsNamespace,
   ViewNamespace,
-  IdlEvents,
 } from "./namespace/index.js";
 import { utf8 } from "../utils/bytes/index.js";
 import { EventManager } from "./event.js";
@@ -230,24 +223,12 @@ export class Program<IDL extends Idl = Idl> {
   private _programId: PublicKey;
 
   /**
-   * IDL in camelCase format to work in TypeScript.
-   *
-   * See {@link rawIdl} field if you need the original IDL.
+   * IDL defining the program's interface.
    */
   public get idl(): IDL {
     return this._idl;
   }
   private _idl: IDL;
-
-  /**
-   * Raw IDL i.e. the original IDL without camelCase conversion.
-   *
-   * See {@link idl} field if you need the camelCased version of the IDL.
-   */
-  public get rawIdl(): Idl {
-    return this._rawIdl;
-  }
-  private _rawIdl: Idl;
 
   /**
    * Coder for serializing requests.
@@ -282,7 +263,7 @@ export class Program<IDL extends Idl = Idl> {
   public constructor(
     idl: IDL,
     programId: Address,
-    provider: Provider = getProvider(),
+    provider?: Provider,
     coder?: Coder,
     getCustomResolver?: (
       instruction: IdlInstruction
@@ -290,24 +271,25 @@ export class Program<IDL extends Idl = Idl> {
   ) {
     programId = translateAddress(programId);
 
-    const camelCasedIdl = convertIdlToCamelCase(idl);
+    if (!provider) {
+      provider = getProvider();
+    }
 
     // Fields.
-    this._idl = camelCasedIdl;
-    this._rawIdl = idl;
+    this._idl = idl;
     this._provider = provider;
     this._programId = programId;
-    this._coder = coder ?? new BorshCoder(camelCasedIdl);
+    this._coder = coder ?? new BorshCoder(idl);
     this._events = new EventManager(this._programId, provider, this._coder);
 
     // Dynamic namespaces.
     const [rpc, instruction, transaction, account, simulate, methods, views] =
       NamespaceFactory.build(
-        camelCasedIdl,
+        idl,
         this._coder,
         programId,
         provider,
-        getCustomResolver
+        getCustomResolver ?? (() => undefined)
       );
     this.rpc = rpc;
     this.instruction = instruction;
@@ -375,13 +357,9 @@ export class Program<IDL extends Idl = Idl> {
    * @param callback  The function to invoke whenever the event is emitted from
    *                  program logs.
    */
-  public addEventListener<E extends keyof IdlEvents<IDL>>(
-    eventName: E & string,
-    callback: (
-      event: IdlEvents<IDL>[E],
-      slot: number,
-      signature: string
-    ) => void
+  public addEventListener(
+    eventName: string,
+    callback: (event: any, slot: number, signature: string) => void
   ): number {
     return this._events.addEventListener(eventName, callback);
   }
