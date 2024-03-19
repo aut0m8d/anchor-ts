@@ -41,7 +41,7 @@ export default {
     "toml",
   ],
   output: {
-    file: "dist/browser/index.js",
+    file: "dist/esm/index.js",
     format: "es",
     sourcemap: true,
   },

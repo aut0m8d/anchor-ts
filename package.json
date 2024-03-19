@@ -22,7 +22,7 @@
     "node": ">=11"
   },
   "scripts": {
-    "build": "rimraf dist/ && pnpm build:node && rm -rf dist/cjs && cp -r dist/esm dist/cjs",
+    "build": "rimraf dist/ && pnpm build:node && rm -rf dist/cjs && cp -r dist/esm dist/cjs && cp -r dist/tsconfig.tsbuildinfo dist/tsconfig.cjs.tsbuildinfo",
     "build:node": "tsc && tsc -p tsconfig.cjs.json",
     "lint:fix": "prettier src/** tests/** -w",
     "lint": "prettier src/** tests/** --check",
