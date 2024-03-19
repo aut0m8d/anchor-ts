@@ -9,8 +9,8 @@ dependencies:
     specifier: ^0.28.0
     version: 0.28.0(@solana/web3.js@0.0.0-development)
   '@solana/web3.js':
-    specifier: github:aut0m8d/solana-web3.js#f8988e1d7fb9b5f7f774e412f41a3b681367d2a4
-    version: github.com/aut0m8d/solana-web3.js/f8988e1d7fb9b5f7f774e412f41a3b681367d2a4
+    specifier: github:aut0m8d/solana-web3.js#0a5991b1eb49ceefa786482e8a8efd8845356d7b
+    version: github.com/aut0m8d/solana-web3.js/0a5991b1eb49ceefa786482e8a8efd8845356d7b
   base64-js:
     specifier: ^1.5.1
     version: 1.5.1
@@ -626,7 +626,7 @@ packages:
     peerDependencies:
       '@solana/web3.js': ^1.68.0
     dependencies:
-      '@solana/web3.js': github.com/aut0m8d/solana-web3.js/f8988e1d7fb9b5f7f774e412f41a3b681367d2a4
+      '@solana/web3.js': github.com/aut0m8d/solana-web3.js/0a5991b1eb49ceefa786482e8a8efd8845356d7b
       bn.js: 5.2.1
       buffer-layout: 1.2.2
     dev: false
@@ -5195,8 +5195,8 @@ packages:
     engines: {node: '>=10'}
     dev: true
 
-  github.com/aut0m8d/solana-web3.js/f8988e1d7fb9b5f7f774e412f41a3b681367d2a4:
-    resolution: {tarball: https://codeload.github.com/aut0m8d/solana-web3.js/tar.gz/f8988e1d7fb9b5f7f774e412f41a3b681367d2a4}
+  github.com/aut0m8d/solana-web3.js/0a5991b1eb49ceefa786482e8a8efd8845356d7b:
+    resolution: {tarball: https://codeload.github.com/aut0m8d/solana-web3.js/tar.gz/0a5991b1eb49ceefa786482e8a8efd8845356d7b}
     name: '@solana/web3.js'
     version: 0.0.0-development
     dependencies:
