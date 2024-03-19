@@ -3,7 +3,7 @@ import { Transaction, VersionedTransaction } from "@solana/web3.js";
  * Returns true if being run inside a web browser,
  * false if in a Node process or electron app.
  */
-export declare const isBrowser: string | boolean;
+export declare const isBrowser = false;
 /**
  * Splits an array into chunks
  *

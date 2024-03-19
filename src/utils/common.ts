@@ -4,9 +4,7 @@ import { Transaction, VersionedTransaction } from "@solana/web3.js";
  * Returns true if being run inside a web browser,
  * false if in a Node process or electron app.
  */
-export const isBrowser =
-  process.env.ANCHOR_BROWSER ||
-  (typeof window !== "undefined" && !window.process?.hasOwnProperty("type"));
+export const isBrowser = false;
 
 /**
  * Splits an array into chunks
