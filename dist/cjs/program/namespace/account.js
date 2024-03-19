@@ -1,5 +1,6 @@
 import camelCase from "camelcase";
 import EventEmitter from "eventemitter3";
+import { Buffer } from "node:buffer";
 import { SystemProgram, } from "@solana/web3.js";
 import { getProvider } from "../../provider.js";
 import { BorshCoder } from "../../coder/index.js";

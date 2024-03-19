@@ -2,6 +2,7 @@ import BN from "bn.js";
 import fetch from "cross-fetch";
 import * as borsh from "@coral-xyz/borsh";
 import { Connection, PublicKey } from "@solana/web3.js";
+import { Buffer } from "node:buffer";
 
 /**
  * Returns a verified build from the anchor registry. null if no such

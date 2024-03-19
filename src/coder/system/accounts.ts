@@ -1,3 +1,4 @@
+import { Buffer } from "node:buffer";
 import { AccountsCoder } from "../index.js";
 import { Idl, IdlTypeDef } from "../../idl.js";
 import * as BufferLayout from "buffer-layout";

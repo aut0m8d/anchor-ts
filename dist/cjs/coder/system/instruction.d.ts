@@ -1,4 +1,5 @@
 /// <reference types="node" />
+import { Buffer } from "node:buffer";
 import { Idl } from "../../idl.js";
 import { InstructionCoder } from "../index.js";
 export declare class SystemInstructionCoder implements InstructionCoder {

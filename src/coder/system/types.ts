@@ -1,3 +1,4 @@
+import { Buffer } from "node:buffer";
 import { TypesCoder } from "../index.js";
 import { Idl } from "../../idl.js";
 

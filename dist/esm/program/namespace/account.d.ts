@@ -1,5 +1,6 @@
 /// <reference types="node" />
 import EventEmitter from "eventemitter3";
+import { Buffer } from "node:buffer";
 import { Signer, PublicKey, TransactionInstruction, Commitment, GetProgramAccountsFilter, AccountInfo, RpcResponseAndContext, Context } from "@solana/web3.js";
 import Provider from "../../provider.js";
 import { Idl, IdlAccountDef } from "../../idl.js";

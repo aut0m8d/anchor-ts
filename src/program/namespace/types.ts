@@ -1,4 +1,5 @@
 import { PublicKey } from "@solana/web3.js";
+import { Buffer } from "node:buffer";
 import BN from "bn.js";
 import { Idl } from "../../";
 import {

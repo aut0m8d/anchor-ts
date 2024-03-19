@@ -1,4 +1,5 @@
 /// <reference types="node" />
+import { Buffer } from "node:buffer";
 import { AccountsCoder } from "../index.js";
 import { Idl, IdlTypeDef } from "../../idl.js";
 export declare class SystemAccountsCoder<A extends string = string> implements AccountsCoder {

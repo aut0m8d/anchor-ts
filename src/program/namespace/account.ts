@@ -1,5 +1,6 @@
 import camelCase from "camelcase";
 import EventEmitter from "eventemitter3";
+import { Buffer } from "node:buffer";
 import {
   Signer,
   PublicKey,

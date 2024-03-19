@@ -1,4 +1,5 @@
 import BN from "bn.js";
+import { Buffer } from "node:buffer";
 import * as BufferLayout from "buffer-layout";
 import camelCase from "camelcase";
 import { Idl } from "../../idl.js";

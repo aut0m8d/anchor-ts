@@ -1,3 +1,4 @@
+import { Buffer } from "node:buffer";
 import * as BufferLayout from "buffer-layout";
 import { NONCE_ACCOUNT_LENGTH, PublicKey } from "@solana/web3.js";
 import { accountSize } from "../common.js";

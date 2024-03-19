@@ -1,5 +1,6 @@
 /// <reference types="node" />
 import { AccountMeta, PublicKey, TransactionInstruction } from "@solana/web3.js";
+import { Buffer } from "node:buffer";
 import { Idl, IdlAccountItem, IdlInstruction } from "../../idl.js";
 import { Accounts } from "../context.js";
 import { AllInstructions, AllInstructionsMap, InstructionContextFn, MakeInstructionsNamespace } from "./types.js";

@@ -1,4 +1,5 @@
 /// <reference types="node" />
+import { Buffer } from "node:buffer";
 import { IdlEvent, IdlTypeDef } from "../idl.js";
 import { Event } from "../program/event.js";
 export * from "./borsh/index.js";

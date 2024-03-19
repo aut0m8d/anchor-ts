@@ -3,6 +3,7 @@ import {
   PublicKey,
   TransactionInstruction,
 } from "@solana/web3.js";
+import { Buffer } from "node:buffer";
 import {
   Idl,
   IdlAccount,

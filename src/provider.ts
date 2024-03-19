@@ -12,6 +12,7 @@ import {
   VersionedTransaction,
   RpcResponseAndContext,
 } from "@solana/web3.js";
+import { Buffer } from "node:buffer";
 import { bs58 } from "./utils/bytes/index.js";
 import { isBrowser, isVersionedTransaction } from "./utils/common.js";
 import {

@@ -1,5 +1,6 @@
 /// <reference types="node" />
 import { PublicKey } from "@solana/web3.js";
+import { Buffer } from "node:buffer";
 import BN from "bn.js";
 import { Idl } from "../../";
 import { IdlAccounts as IdlIdlAccounts, IdlAccountItem, IdlEnumFields, IdlEnumFieldsNamed, IdlEnumFieldsTuple, IdlField, IdlInstruction, IdlType, IdlTypeDef, IdlTypeDefTyEnum, IdlTypeDefTyStruct } from "../../idl";

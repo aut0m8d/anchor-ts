@@ -1,4 +1,5 @@
 import camelCase from "camelcase";
+import { Buffer } from "node:buffer";
 import {
   PublicKey,
   SystemProgram,

@@ -1,4 +1,5 @@
 import camelCase from "camelcase";
+import { Buffer } from "node:buffer";
 import { PublicKey, SystemProgram, SYSVAR_CLOCK_PUBKEY, SYSVAR_RENT_PUBKEY, } from "@solana/web3.js";
 import { isIdlAccounts, } from "../idl.js";
 import * as utf8 from "../utils/bytes/utf8.js";

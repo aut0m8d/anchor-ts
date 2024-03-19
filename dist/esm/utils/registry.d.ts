@@ -1,6 +1,7 @@
 /// <reference types="node" />
 import BN from "bn.js";
 import { Connection, PublicKey } from "@solana/web3.js";
+import { Buffer } from "node:buffer";
 /**
  * Returns a verified build from the anchor registry. null if no such
  * verified build exists, e.g., if the program has been upgraded since the
