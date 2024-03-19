@@ -1,17 +1,13 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.createWithSeedSync = void 0;
-const node_buffer_1 = require("node:buffer");
-const web3_js_1 = require("@solana/web3.js");
-const sha256_1 = require("@noble/hashes/sha256");
+import { Buffer } from "node:buffer";
+import { PublicKey } from "@solana/web3.js";
+import { sha256 } from "@noble/hashes/sha256";
 // Sync version of web3.PublicKey.createWithSeed.
-function createWithSeedSync(fromPublicKey, seed, programId) {
-    const buffer = node_buffer_1.Buffer.concat([
+export function createWithSeedSync(fromPublicKey, seed, programId) {
+    const buffer = Buffer.concat([
         fromPublicKey.toBuffer(),
-        node_buffer_1.Buffer.from(seed),
+        Buffer.from(seed),
         programId.toBuffer(),
     ]);
-    return new web3_js_1.PublicKey((0, sha256_1.sha256)(buffer));
+    return new PublicKey(sha256(buffer));
 }
-exports.createWithSeedSync = createWithSeedSync;
 //# sourceMappingURL=pubkey.js.map

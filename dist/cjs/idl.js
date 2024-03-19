@@ -1,65 +1,31 @@
-"use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.handleDefinedFields = exports.convertIdlToCamelCase = exports.encodeIdlAccount = exports.decodeIdlAccount = exports.seed = exports.idlAddress = exports.isCompositeAccounts = void 0;
-const camelcase_1 = __importDefault(require("camelcase"));
-const node_buffer_1 = require("node:buffer");
-const web3_js_1 = require("@solana/web3.js");
-const borsh = __importStar(require("@coral-xyz/borsh"));
-function isCompositeAccounts(accountItem) {
+import camelCase from "camelcase";
+import { Buffer } from "node:buffer";
+import { PublicKey } from "@solana/web3.js";
+import * as borsh from "@coral-xyz/borsh";
+export function isCompositeAccounts(accountItem) {
     return "accounts" in accountItem;
 }
-exports.isCompositeAccounts = isCompositeAccounts;
 // Deterministic IDL address as a function of the program id.
-async function idlAddress(programId) {
-    const base = (await web3_js_1.PublicKey.findProgramAddress([], programId))[0];
-    return await web3_js_1.PublicKey.createWithSeed(base, seed(), programId);
+export async function idlAddress(programId) {
+    const base = (await PublicKey.findProgramAddress([], programId))[0];
+    return await PublicKey.createWithSeed(base, seed(), programId);
 }
-exports.idlAddress = idlAddress;
 // Seed for generating the idlAddress.
-function seed() {
+export function seed() {
     return "anchor:idl";
 }
-exports.seed = seed;
 const IDL_ACCOUNT_LAYOUT = borsh.struct([
     borsh.publicKey("authority"),
     borsh.vecU8("data"),
 ]);
-function decodeIdlAccount(data) {
+export function decodeIdlAccount(data) {
     return IDL_ACCOUNT_LAYOUT.decode(data);
 }
-exports.decodeIdlAccount = decodeIdlAccount;
-function encodeIdlAccount(acc) {
-    const buffer = node_buffer_1.Buffer.alloc(1000); // TODO: use a tighter buffer.
+export function encodeIdlAccount(acc) {
+    const buffer = Buffer.alloc(1000); // TODO: use a tighter buffer.
     const len = IDL_ACCOUNT_LAYOUT.encode(acc, buffer);
     return buffer.slice(0, len);
 }
-exports.encodeIdlAccount = encodeIdlAccount;
 /**
  * Convert the given IDL to camelCase.
  *
@@ -73,11 +39,11 @@ exports.encodeIdlAccount = encodeIdlAccount;
  * @param idl IDL to convert to camelCase
  * @returns camelCase version of the IDL
  */
-function convertIdlToCamelCase(idl) {
+export function convertIdlToCamelCase(idl) {
     const KEYS_TO_CONVERT = ["name", "path", "account", "relations", "generic"];
     // `my_account.field` is getting converted to `myAccountField` but we
     // need `myAccount.field`.
-    const toCamelCase = (s) => s.split(".").map(camelcase_1.default).join(".");
+    const toCamelCase = (s) => s.split(".").map(camelCase).join(".");
     const recursivelyConvertNamesToCamelCase = (obj) => {
         for (const key in obj) {
             const val = obj[key];
@@ -93,9 +59,8 @@ function convertIdlToCamelCase(idl) {
     recursivelyConvertNamesToCamelCase(camelCasedIdl);
     return camelCasedIdl;
 }
-exports.convertIdlToCamelCase = convertIdlToCamelCase;
 /** Conveniently handle all defined field kinds with proper type support. */
-function handleDefinedFields(fields, unitCb, namedCb, tupleCb) {
+export function handleDefinedFields(fields, unitCb, namedCb, tupleCb) {
     // Unit
     if (!(fields === null || fields === void 0 ? void 0 : fields.length))
         return unitCb();
@@ -106,5 +71,4 @@ function handleDefinedFields(fields, unitCb, namedCb, tupleCb) {
     // Tuple
     return tupleCb(fields);
 }
-exports.handleDefinedFields = handleDefinedFields;
 //# sourceMappingURL=idl.js.map

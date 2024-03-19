@@ -1,9 +1,6 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.translateAddress = exports.validateAccounts = exports.toInstruction = exports.parseIdlErrors = void 0;
-const web3_js_1 = require("@solana/web3.js");
-const idl_js_1 = require("../idl.js");
-function parseIdlErrors(idl) {
+import { PublicKey } from "@solana/web3.js";
+import { isCompositeAccounts, } from "../idl.js";
+export function parseIdlErrors(idl) {
     const errors = new Map();
     if (idl.errors) {
         idl.errors.forEach((e) => {
@@ -14,8 +11,7 @@ function parseIdlErrors(idl) {
     }
     return errors;
 }
-exports.parseIdlErrors = parseIdlErrors;
-function toInstruction(idlIx, ...args) {
+export function toInstruction(idlIx, ...args) {
     if (idlIx.args.length != args.length) {
         throw new Error("Invalid argument length");
     }
@@ -27,11 +23,10 @@ function toInstruction(idlIx, ...args) {
     });
     return ix;
 }
-exports.toInstruction = toInstruction;
 // Throws error if any account required for the `ix` is not given.
-function validateAccounts(ixAccounts, accounts = {}) {
+export function validateAccounts(ixAccounts, accounts = {}) {
     ixAccounts.forEach((acc) => {
-        if ((0, idl_js_1.isCompositeAccounts)(acc)) {
+        if (isCompositeAccounts(acc)) {
             validateAccounts(acc.accounts, accounts[acc.name]);
         }
         else {
@@ -41,10 +36,8 @@ function validateAccounts(ixAccounts, accounts = {}) {
         }
     });
 }
-exports.validateAccounts = validateAccounts;
 // Translates an address to a Pubkey.
-function translateAddress(address) {
-    return address instanceof web3_js_1.PublicKey ? address : new web3_js_1.PublicKey(address);
+export function translateAddress(address) {
+    return address instanceof PublicKey ? address : new PublicKey(address);
 }
-exports.translateAddress = translateAddress;
 //# sourceMappingURL=common.js.map

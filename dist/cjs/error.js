@@ -1,39 +1,12 @@
-"use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.LangErrorMessage = exports.LangErrorCode = exports.translateError = exports.ProgramError = exports.AnchorError = exports.ProgramErrorStack = exports.IdlError = void 0;
-const web3_js_1 = require("@solana/web3.js");
-const features = __importStar(require("./utils/features.js"));
-class IdlError extends Error {
+import { PublicKey } from "@solana/web3.js";
+import * as features from "./utils/features.js";
+export class IdlError extends Error {
     constructor(message) {
         super(message);
         this.name = "IdlError";
     }
 }
-exports.IdlError = IdlError;
-class ProgramErrorStack {
+export class ProgramErrorStack {
     constructor(stack) {
         this.stack = stack;
     }
@@ -51,13 +24,12 @@ class ProgramErrorStack {
             if (!programKey) {
                 continue;
             }
-            programStack.push(new web3_js_1.PublicKey(programKey));
+            programStack.push(new PublicKey(programKey));
         }
         return new ProgramErrorStack(programStack);
     }
 }
-exports.ProgramErrorStack = ProgramErrorStack;
-class AnchorError extends Error {
+export class AnchorError extends Error {
     constructor(errorCode, errorMessage, errorLogs, logs, origin, comparedValues) {
         super(errorLogs.join("\n").replace("Program log: ", ""));
         this.errorLogs = errorLogs;
@@ -88,8 +60,8 @@ class AnchorError extends Error {
                 const leftPubkey = pubkeyRegex.exec(logs[anchorErrorLogIndex + 2])[1];
                 const rightPubkey = pubkeyRegex.exec(logs[anchorErrorLogIndex + 4])[1];
                 comparedValues = [
-                    new web3_js_1.PublicKey(leftPubkey),
-                    new web3_js_1.PublicKey(rightPubkey),
+                    new PublicKey(leftPubkey),
+                    new PublicKey(rightPubkey),
                 ];
                 errorLogs.push(...logs.slice(anchorErrorLogIndex + 1, anchorErrorLogIndex + 5));
             }
@@ -151,9 +123,8 @@ class AnchorError extends Error {
         return this.message;
     }
 }
-exports.AnchorError = AnchorError;
 // An error from a user defined program.
-class ProgramError extends Error {
+export class ProgramError extends Error {
     constructor(code, msg, logs) {
         super();
         this.code = code;
@@ -197,7 +168,7 @@ class ProgramError extends Error {
             return new ProgramError(errorCode, errorMsg, err.logs);
         }
         // Parse framework internal error.
-        errorMsg = exports.LangErrorMessage.get(errorCode);
+        errorMsg = LangErrorMessage.get(errorCode);
         if (errorMsg !== undefined) {
             return new ProgramError(errorCode, errorMsg, err.logs);
         }
@@ -216,8 +187,7 @@ class ProgramError extends Error {
         return this.msg;
     }
 }
-exports.ProgramError = ProgramError;
-function translateError(err, idlErrors) {
+export function translateError(err, idlErrors) {
     if (features.isSet("debug-logs")) {
         console.log("Translating error:", err);
     }
@@ -251,8 +221,7 @@ function translateError(err, idlErrors) {
     }
     return err;
 }
-exports.translateError = translateError;
-exports.LangErrorCode = {
+export const LangErrorCode = {
     // Instructions.
     InstructionMissing: 100,
     InstructionFallbackNotFound: 101,
@@ -315,153 +284,153 @@ exports.LangErrorCode = {
     // Used for APIs that shouldn't be used anymore.
     Deprecated: 5000,
 };
-exports.LangErrorMessage = new Map([
+export const LangErrorMessage = new Map([
     // Instructions.
     [
-        exports.LangErrorCode.InstructionMissing,
+        LangErrorCode.InstructionMissing,
         "8 byte instruction identifier not provided",
     ],
     [
-        exports.LangErrorCode.InstructionFallbackNotFound,
+        LangErrorCode.InstructionFallbackNotFound,
         "Fallback functions are not supported",
     ],
     [
-        exports.LangErrorCode.InstructionDidNotDeserialize,
+        LangErrorCode.InstructionDidNotDeserialize,
         "The program could not deserialize the given instruction",
     ],
     [
-        exports.LangErrorCode.InstructionDidNotSerialize,
+        LangErrorCode.InstructionDidNotSerialize,
         "The program could not serialize the given instruction",
     ],
     // Idl instructions.
     [
-        exports.LangErrorCode.IdlInstructionStub,
+        LangErrorCode.IdlInstructionStub,
         "The program was compiled without idl instructions",
     ],
     [
-        exports.LangErrorCode.IdlInstructionInvalidProgram,
+        LangErrorCode.IdlInstructionInvalidProgram,
         "The transaction was given an invalid program for the IDL instruction",
     ],
     // Constraints.
-    [exports.LangErrorCode.ConstraintMut, "A mut constraint was violated"],
-    [exports.LangErrorCode.ConstraintHasOne, "A has one constraint was violated"],
-    [exports.LangErrorCode.ConstraintSigner, "A signer constraint was violated"],
-    [exports.LangErrorCode.ConstraintRaw, "A raw constraint was violated"],
-    [exports.LangErrorCode.ConstraintOwner, "An owner constraint was violated"],
+    [LangErrorCode.ConstraintMut, "A mut constraint was violated"],
+    [LangErrorCode.ConstraintHasOne, "A has one constraint was violated"],
+    [LangErrorCode.ConstraintSigner, "A signer constraint was violated"],
+    [LangErrorCode.ConstraintRaw, "A raw constraint was violated"],
+    [LangErrorCode.ConstraintOwner, "An owner constraint was violated"],
     [
-        exports.LangErrorCode.ConstraintRentExempt,
+        LangErrorCode.ConstraintRentExempt,
         "A rent exemption constraint was violated",
     ],
-    [exports.LangErrorCode.ConstraintSeeds, "A seeds constraint was violated"],
-    [exports.LangErrorCode.ConstraintExecutable, "An executable constraint was violated"],
+    [LangErrorCode.ConstraintSeeds, "A seeds constraint was violated"],
+    [LangErrorCode.ConstraintExecutable, "An executable constraint was violated"],
     [
-        exports.LangErrorCode.ConstraintState,
+        LangErrorCode.ConstraintState,
         "Deprecated Error, feel free to replace with something else",
     ],
-    [exports.LangErrorCode.ConstraintAssociated, "An associated constraint was violated"],
+    [LangErrorCode.ConstraintAssociated, "An associated constraint was violated"],
     [
-        exports.LangErrorCode.ConstraintAssociatedInit,
+        LangErrorCode.ConstraintAssociatedInit,
         "An associated init constraint was violated",
     ],
-    [exports.LangErrorCode.ConstraintClose, "A close constraint was violated"],
-    [exports.LangErrorCode.ConstraintAddress, "An address constraint was violated"],
-    [exports.LangErrorCode.ConstraintZero, "Expected zero account discriminant"],
-    [exports.LangErrorCode.ConstraintTokenMint, "A token mint constraint was violated"],
-    [exports.LangErrorCode.ConstraintTokenOwner, "A token owner constraint was violated"],
+    [LangErrorCode.ConstraintClose, "A close constraint was violated"],
+    [LangErrorCode.ConstraintAddress, "An address constraint was violated"],
+    [LangErrorCode.ConstraintZero, "Expected zero account discriminant"],
+    [LangErrorCode.ConstraintTokenMint, "A token mint constraint was violated"],
+    [LangErrorCode.ConstraintTokenOwner, "A token owner constraint was violated"],
     [
-        exports.LangErrorCode.ConstraintMintMintAuthority,
+        LangErrorCode.ConstraintMintMintAuthority,
         "A mint mint authority constraint was violated",
     ],
     [
-        exports.LangErrorCode.ConstraintMintFreezeAuthority,
+        LangErrorCode.ConstraintMintFreezeAuthority,
         "A mint freeze authority constraint was violated",
     ],
     [
-        exports.LangErrorCode.ConstraintMintDecimals,
+        LangErrorCode.ConstraintMintDecimals,
         "A mint decimals constraint was violated",
     ],
-    [exports.LangErrorCode.ConstraintSpace, "A space constraint was violated"],
+    [LangErrorCode.ConstraintSpace, "A space constraint was violated"],
     [
-        exports.LangErrorCode.ConstraintAccountIsNone,
+        LangErrorCode.ConstraintAccountIsNone,
         "A required account for the constraint is None",
     ],
     // Require.
-    [exports.LangErrorCode.RequireViolated, "A require expression was violated"],
-    [exports.LangErrorCode.RequireEqViolated, "A require_eq expression was violated"],
+    [LangErrorCode.RequireViolated, "A require expression was violated"],
+    [LangErrorCode.RequireEqViolated, "A require_eq expression was violated"],
     [
-        exports.LangErrorCode.RequireKeysEqViolated,
+        LangErrorCode.RequireKeysEqViolated,
         "A require_keys_eq expression was violated",
     ],
-    [exports.LangErrorCode.RequireNeqViolated, "A require_neq expression was violated"],
+    [LangErrorCode.RequireNeqViolated, "A require_neq expression was violated"],
     [
-        exports.LangErrorCode.RequireKeysNeqViolated,
+        LangErrorCode.RequireKeysNeqViolated,
         "A require_keys_neq expression was violated",
     ],
-    [exports.LangErrorCode.RequireGtViolated, "A require_gt expression was violated"],
-    [exports.LangErrorCode.RequireGteViolated, "A require_gte expression was violated"],
+    [LangErrorCode.RequireGtViolated, "A require_gt expression was violated"],
+    [LangErrorCode.RequireGteViolated, "A require_gte expression was violated"],
     // Accounts.
     [
-        exports.LangErrorCode.AccountDiscriminatorAlreadySet,
+        LangErrorCode.AccountDiscriminatorAlreadySet,
         "The account discriminator was already set on this account",
     ],
     [
-        exports.LangErrorCode.AccountDiscriminatorNotFound,
+        LangErrorCode.AccountDiscriminatorNotFound,
         "No 8 byte discriminator was found on the account",
     ],
     [
-        exports.LangErrorCode.AccountDiscriminatorMismatch,
+        LangErrorCode.AccountDiscriminatorMismatch,
         "8 byte discriminator did not match what was expected",
     ],
-    [exports.LangErrorCode.AccountDidNotDeserialize, "Failed to deserialize the account"],
-    [exports.LangErrorCode.AccountDidNotSerialize, "Failed to serialize the account"],
+    [LangErrorCode.AccountDidNotDeserialize, "Failed to deserialize the account"],
+    [LangErrorCode.AccountDidNotSerialize, "Failed to serialize the account"],
     [
-        exports.LangErrorCode.AccountNotEnoughKeys,
+        LangErrorCode.AccountNotEnoughKeys,
         "Not enough account keys given to the instruction",
     ],
-    [exports.LangErrorCode.AccountNotMutable, "The given account is not mutable"],
+    [LangErrorCode.AccountNotMutable, "The given account is not mutable"],
     [
-        exports.LangErrorCode.AccountOwnedByWrongProgram,
+        LangErrorCode.AccountOwnedByWrongProgram,
         "The given account is owned by a different program than expected",
     ],
-    [exports.LangErrorCode.InvalidProgramId, "Program ID was not as expected"],
-    [exports.LangErrorCode.InvalidProgramExecutable, "Program account is not executable"],
-    [exports.LangErrorCode.AccountNotSigner, "The given account did not sign"],
+    [LangErrorCode.InvalidProgramId, "Program ID was not as expected"],
+    [LangErrorCode.InvalidProgramExecutable, "Program account is not executable"],
+    [LangErrorCode.AccountNotSigner, "The given account did not sign"],
     [
-        exports.LangErrorCode.AccountNotSystemOwned,
+        LangErrorCode.AccountNotSystemOwned,
         "The given account is not owned by the system program",
     ],
     [
-        exports.LangErrorCode.AccountNotInitialized,
+        LangErrorCode.AccountNotInitialized,
         "The program expected this account to be already initialized",
     ],
     [
-        exports.LangErrorCode.AccountNotProgramData,
+        LangErrorCode.AccountNotProgramData,
         "The given account is not a program data account",
     ],
     [
-        exports.LangErrorCode.AccountNotAssociatedTokenAccount,
+        LangErrorCode.AccountNotAssociatedTokenAccount,
         "The given account is not the associated token account",
     ],
     [
-        exports.LangErrorCode.AccountSysvarMismatch,
+        LangErrorCode.AccountSysvarMismatch,
         "The given public key does not match the required sysvar",
     ],
     [
-        exports.LangErrorCode.AccountReallocExceedsLimit,
+        LangErrorCode.AccountReallocExceedsLimit,
         "The account reallocation exceeds the MAX_PERMITTED_DATA_INCREASE limit",
     ],
     [
-        exports.LangErrorCode.AccountDuplicateReallocs,
+        LangErrorCode.AccountDuplicateReallocs,
         "The account was duplicated for more than one reallocation",
     ],
     // Miscellaneous
     [
-        exports.LangErrorCode.DeclaredProgramIdMismatch,
+        LangErrorCode.DeclaredProgramIdMismatch,
         "The declared program id does not match the actual program id",
     ],
     // Deprecated
     [
-        exports.LangErrorCode.Deprecated,
+        LangErrorCode.Deprecated,
         "The API being used is deprecated and should no longer be used",
     ],
 ]);

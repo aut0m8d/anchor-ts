@@ -1,35 +1,15 @@
-"use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __exportStar = (this && this.__exportStar) || function(m, exports) {
-    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.Program = void 0;
-const pako_1 = require("pako");
-const provider_js_1 = require("../provider.js");
-const idl_js_1 = require("../idl.js");
-const index_js_1 = require("../coder/index.js");
-const index_js_2 = __importDefault(require("./namespace/index.js"));
-const index_js_3 = require("../utils/bytes/index.js");
-const event_js_1 = require("./event.js");
-const common_js_1 = require("./common.js");
-__exportStar(require("./common.js"), exports);
-__exportStar(require("./context.js"), exports);
-__exportStar(require("./event.js"), exports);
-__exportStar(require("./namespace/index.js"), exports);
+import { inflate } from "pako";
+import { getProvider } from "../provider.js";
+import { idlAddress, decodeIdlAccount, convertIdlToCamelCase, } from "../idl.js";
+import { BorshCoder } from "../coder/index.js";
+import NamespaceFactory from "./namespace/index.js";
+import { utf8 } from "../utils/bytes/index.js";
+import { EventManager } from "./event.js";
+import { translateAddress } from "./common.js";
+export * from "./common.js";
+export * from "./context.js";
+export * from "./event.js";
+export * from "./namespace/index.js";
 /**
  * ## Program
  *
@@ -56,7 +36,7 @@ __exportStar(require("./namespace/index.js"), exports);
  * below will refer to the two counter examples found
  * [here](https://github.com/coral-xyz/anchor#examples).
  */
-class Program {
+export class Program {
     /**
      * Address of the program.
      */
@@ -100,18 +80,18 @@ class Program {
      *                          for the given instruction. This is useful for resolving
      *                          public keys of missing accounts when building instructions
      */
-    constructor(idl, programId, provider = (0, provider_js_1.getProvider)(), coder, getCustomResolver) {
-        programId = (0, common_js_1.translateAddress)(programId);
-        const camelCasedIdl = (0, idl_js_1.convertIdlToCamelCase)(idl);
+    constructor(idl, programId, provider = getProvider(), coder, getCustomResolver) {
+        programId = translateAddress(programId);
+        const camelCasedIdl = convertIdlToCamelCase(idl);
         // Fields.
         this._idl = camelCasedIdl;
         this._rawIdl = idl;
         this._provider = provider;
         this._programId = programId;
-        this._coder = coder !== null && coder !== void 0 ? coder : new index_js_1.BorshCoder(camelCasedIdl);
-        this._events = new event_js_1.EventManager(this._programId, provider, this._coder);
+        this._coder = coder !== null && coder !== void 0 ? coder : new BorshCoder(camelCasedIdl);
+        this._events = new EventManager(this._programId, provider, this._coder);
         // Dynamic namespaces.
-        const [rpc, instruction, transaction, account, simulate, methods, views] = index_js_2.default.build(camelCasedIdl, this._coder, programId, provider, getCustomResolver);
+        const [rpc, instruction, transaction, account, simulate, methods, views] = NamespaceFactory.build(camelCasedIdl, this._coder, programId, provider, getCustomResolver);
         this.rpc = rpc;
         this.instruction = instruction;
         this.transaction = transaction;
@@ -130,7 +110,7 @@ class Program {
      * @param provider  The network and wallet context.
      */
     static async at(address, provider) {
-        const programId = (0, common_js_1.translateAddress)(address);
+        const programId = translateAddress(address);
         const idl = await Program.fetchIdl(programId, provider);
         if (!idl) {
             throw new Error(`IDL not found for program: ${address.toString()}`);
@@ -147,17 +127,17 @@ class Program {
      * @param provider  The network and wallet context.
      */
     static async fetchIdl(address, provider) {
-        provider = provider !== null && provider !== void 0 ? provider : (0, provider_js_1.getProvider)();
-        const programId = (0, common_js_1.translateAddress)(address);
-        const idlAddr = await (0, idl_js_1.idlAddress)(programId);
+        provider = provider !== null && provider !== void 0 ? provider : getProvider();
+        const programId = translateAddress(address);
+        const idlAddr = await idlAddress(programId);
         const accountInfo = await provider.connection.getAccountInfo(idlAddr);
         if (!accountInfo) {
             return null;
         }
         // Chop off account discriminator.
-        let idlAccount = (0, idl_js_1.decodeIdlAccount)(accountInfo.data.slice(8));
-        const inflatedIdl = (0, pako_1.inflate)(idlAccount.data);
-        return JSON.parse(index_js_3.utf8.decode(inflatedIdl));
+        let idlAccount = decodeIdlAccount(accountInfo.data.slice(8));
+        const inflatedIdl = inflate(idlAccount.data);
+        return JSON.parse(utf8.decode(inflatedIdl));
     }
     /**
      * Invokes the given callback every time the given event is emitted.
@@ -176,5 +156,4 @@ class Program {
         return await this._events.removeEventListener(listener);
     }
 }
-exports.Program = Program;
 //# sourceMappingURL=index.js.map

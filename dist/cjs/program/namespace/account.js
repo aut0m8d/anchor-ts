@@ -1,39 +1,10 @@
-"use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.AccountClient = void 0;
-const eventemitter3_1 = __importDefault(require("eventemitter3"));
-const web3_js_1 = require("@solana/web3.js");
-const provider_js_1 = require("../../provider.js");
-const index_js_1 = require("../../coder/index.js");
-const common_js_1 = require("../common.js");
-const rpcUtil = __importStar(require("../../utils/rpc.js"));
-class AccountFactory {
+import EventEmitter from "eventemitter3";
+import { SystemProgram, } from "@solana/web3.js";
+import { getProvider } from "../../provider.js";
+import { BorshCoder } from "../../coder/index.js";
+import { translateAddress } from "../common.js";
+import * as rpcUtil from "../../utils/rpc.js";
+export default class AccountFactory {
     static build(idl, coder, programId, provider) {
         var _a;
         return ((_a = idl.accounts) !== null && _a !== void 0 ? _a : []).reduce((accountFns, acc) => {
@@ -42,8 +13,7 @@ class AccountFactory {
         }, {});
     }
 }
-exports.default = AccountFactory;
-class AccountClient {
+export class AccountClient {
     /**
      * Returns the number of bytes in this account.
      */
@@ -71,8 +41,8 @@ class AccountClient {
     constructor(idl, idlAccount, programId, provider, coder) {
         this._idlAccount = idlAccount;
         this._programId = programId;
-        this._provider = provider !== null && provider !== void 0 ? provider : (0, provider_js_1.getProvider)();
-        this._coder = coder !== null && coder !== void 0 ? coder : new index_js_1.BorshCoder(idl);
+        this._provider = provider !== null && provider !== void 0 ? provider : getProvider();
+        this._coder = coder !== null && coder !== void 0 ? coder : new BorshCoder(idl);
         this._size = this._coder.accounts.size(idlAccount.name);
     }
     /**
@@ -140,7 +110,7 @@ class AccountClient {
      * @param addresses The addresses of the accounts to fetch.
      */
     async fetchMultipleAndContext(addresses, commitment) {
-        const accounts = await rpcUtil.getMultipleAccountsAndContext(this._provider.connection, addresses.map((address) => (0, common_js_1.translateAddress)(address)), commitment);
+        const accounts = await rpcUtil.getMultipleAccountsAndContext(this._provider.connection, addresses.map((address) => translateAddress(address)), commitment);
         // Decode accounts where discriminator is correct, null otherwise
         return accounts.map((result) => {
             if (result == null) {
@@ -198,8 +168,8 @@ class AccountClient {
         if (sub) {
             return sub.ee;
         }
-        const ee = new eventemitter3_1.default();
-        address = (0, common_js_1.translateAddress)(address);
+        const ee = new EventEmitter();
+        address = translateAddress(address);
         const listener = this._provider.connection.onAccountChange(address, (acc) => {
             const account = this._coder.accounts.decode(this._idlAccount.name, acc.data);
             ee.emit("change", account);
@@ -236,7 +206,7 @@ class AccountClient {
         if (this._provider.publicKey === undefined) {
             throw new Error("This function requires the Provider interface implementor to have a 'publicKey' field.");
         }
-        return web3_js_1.SystemProgram.createAccount({
+        return SystemProgram.createAccount({
             fromPubkey: this._provider.publicKey,
             newAccountPubkey: signer.publicKey,
             space: sizeOverride !== null && sizeOverride !== void 0 ? sizeOverride : size,
@@ -245,13 +215,12 @@ class AccountClient {
         });
     }
     async getAccountInfo(address, commitment) {
-        return await this._provider.connection.getAccountInfo((0, common_js_1.translateAddress)(address), commitment);
+        return await this._provider.connection.getAccountInfo(translateAddress(address), commitment);
     }
     async getAccountInfoAndContext(address, commitment) {
-        return await this._provider.connection.getAccountInfoAndContext((0, common_js_1.translateAddress)(address), commitment);
+        return await this._provider.connection.getAccountInfoAndContext(translateAddress(address), commitment);
     }
 }
-exports.AccountClient = AccountClient;
 // Tracks all subscriptions.
 const subscriptions = new Map();
 //# sourceMappingURL=account.js.map

@@ -1,22 +1,19 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.simulateTransaction = exports.getMultipleAccountsAndContext = exports.getMultipleAccounts = exports.invoke = void 0;
-const web3_js_1 = require("@solana/web3.js");
-const common_js_1 = require("../utils/common.js");
-const common_js_2 = require("../program/common.js");
-const provider_js_1 = require("../provider.js");
-const superstruct_1 = require("superstruct");
+import { Transaction, TransactionInstruction, SendTransactionError, } from "@solana/web3.js";
+import { chunks } from "../utils/common.js";
+import { translateAddress } from "../program/common.js";
+import { getProvider } from "../provider.js";
+import { type as pick, number, string, array, boolean, literal, union, optional, nullable, coerce, create, unknown, any, } from "superstruct";
 /**
  * Sends a transaction to a program with the given accounts and instruction
  * data.
  */
-async function invoke(programId, accounts, data, provider) {
-    programId = (0, common_js_2.translateAddress)(programId);
+export async function invoke(programId, accounts, data, provider) {
+    programId = translateAddress(programId);
     if (!provider) {
-        provider = (0, provider_js_1.getProvider)();
+        provider = getProvider();
     }
-    const tx = new web3_js_1.Transaction();
-    tx.add(new web3_js_1.TransactionInstruction({
+    const tx = new Transaction();
+    tx.add(new TransactionInstruction({
         programId,
         keys: accounts !== null && accounts !== void 0 ? accounts : [],
         data,
@@ -26,9 +23,8 @@ async function invoke(programId, accounts, data, provider) {
     }
     return await provider.sendAndConfirm(tx, []);
 }
-exports.invoke = invoke;
 const GET_MULTIPLE_ACCOUNTS_LIMIT = 99;
-async function getMultipleAccounts(connection, publicKeys, commitment) {
+export async function getMultipleAccounts(connection, publicKeys, commitment) {
     const results = await getMultipleAccountsAndContext(connection, publicKeys, commitment);
     return results.map((result) => {
         return result
@@ -36,18 +32,16 @@ async function getMultipleAccounts(connection, publicKeys, commitment) {
             : null;
     });
 }
-exports.getMultipleAccounts = getMultipleAccounts;
-async function getMultipleAccountsAndContext(connection, publicKeys, commitment) {
+export async function getMultipleAccountsAndContext(connection, publicKeys, commitment) {
     if (publicKeys.length <= GET_MULTIPLE_ACCOUNTS_LIMIT) {
         return await getMultipleAccountsAndContextCore(connection, publicKeys, commitment);
     }
     else {
-        const batches = (0, common_js_1.chunks)(publicKeys, GET_MULTIPLE_ACCOUNTS_LIMIT);
+        const batches = chunks(publicKeys, GET_MULTIPLE_ACCOUNTS_LIMIT);
         const results = await Promise.all(batches.map((batch) => getMultipleAccountsAndContextCore(connection, batch, commitment)));
         return results.flat();
     }
 }
-exports.getMultipleAccountsAndContext = getMultipleAccountsAndContext;
 async function getMultipleAccountsAndContextCore(connection, publicKeys, commitmentOverride) {
     const commitment = commitmentOverride !== null && commitmentOverride !== void 0 ? commitmentOverride : connection.commitment;
     const { value: accountInfos, context } = await connection.getMultipleAccountsInfoAndContext(publicKeys, commitment);
@@ -64,7 +58,7 @@ async function getMultipleAccountsAndContextCore(connection, publicKeys, commitm
     return accounts;
 }
 // copy from @solana/web3.js that has a commitment param
-async function simulateTransaction(connection, transaction, signers, commitment, includeAccounts) {
+export async function simulateTransaction(connection, transaction, signers, commitment, includeAccounts) {
     var _a;
     if (signers && signers.length > 0) {
         transaction.sign(...signers);
@@ -92,7 +86,7 @@ async function simulateTransaction(connection, transaction, signers, commitment,
     const args = [encodedTransaction, config];
     // @ts-expect-error
     const unsafeRes = await connection._rpcRequest("simulateTransaction", args);
-    const res = (0, superstruct_1.create)(unsafeRes, SimulatedTransactionResponseStruct);
+    const res = create(unsafeRes, SimulatedTransactionResponseStruct);
     if ("error" in res) {
         let logs;
         if ("data" in res.error) {
@@ -103,66 +97,65 @@ async function simulateTransaction(connection, transaction, signers, commitment,
                 console.error(res.error.message, logTrace);
             }
         }
-        throw new web3_js_1.SendTransactionError("failed to simulate transaction: " + res.error.message, logs);
+        throw new SendTransactionError("failed to simulate transaction: " + res.error.message, logs);
     }
     return res.result;
 }
-exports.simulateTransaction = simulateTransaction;
 // copy from @solana/web3.js
 function jsonRpcResult(schema) {
-    return (0, superstruct_1.coerce)(createRpcResult(schema), UnknownRpcResult, (value) => {
+    return coerce(createRpcResult(schema), UnknownRpcResult, (value) => {
         if ("error" in value) {
             return value;
         }
         else {
             return {
                 ...value,
-                result: (0, superstruct_1.create)(value.result, schema),
+                result: create(value.result, schema),
             };
         }
     });
 }
 // copy from @solana/web3.js
-const UnknownRpcResult = createRpcResult((0, superstruct_1.unknown)());
+const UnknownRpcResult = createRpcResult(unknown());
 // copy from @solana/web3.js
 function createRpcResult(result) {
-    return (0, superstruct_1.union)([
-        (0, superstruct_1.type)({
-            jsonrpc: (0, superstruct_1.literal)("2.0"),
-            id: (0, superstruct_1.string)(),
+    return union([
+        pick({
+            jsonrpc: literal("2.0"),
+            id: string(),
             result,
         }),
-        (0, superstruct_1.type)({
-            jsonrpc: (0, superstruct_1.literal)("2.0"),
-            id: (0, superstruct_1.string)(),
-            error: (0, superstruct_1.type)({
-                code: (0, superstruct_1.unknown)(),
-                message: (0, superstruct_1.string)(),
-                data: (0, superstruct_1.optional)((0, superstruct_1.any)()),
+        pick({
+            jsonrpc: literal("2.0"),
+            id: string(),
+            error: pick({
+                code: unknown(),
+                message: string(),
+                data: optional(any()),
             }),
         }),
     ]);
 }
 // copy from @solana/web3.js
 function jsonRpcResultAndContext(value) {
-    return jsonRpcResult((0, superstruct_1.type)({
-        context: (0, superstruct_1.type)({
-            slot: (0, superstruct_1.number)(),
+    return jsonRpcResult(pick({
+        context: pick({
+            slot: number(),
         }),
         value,
     }));
 }
 // copy from @solana/web3.js
-const SimulatedTransactionResponseStruct = jsonRpcResultAndContext((0, superstruct_1.type)({
-    err: (0, superstruct_1.nullable)((0, superstruct_1.union)([(0, superstruct_1.type)({}), (0, superstruct_1.string)()])),
-    logs: (0, superstruct_1.nullable)((0, superstruct_1.array)((0, superstruct_1.string)())),
-    accounts: (0, superstruct_1.optional)((0, superstruct_1.nullable)((0, superstruct_1.array)((0, superstruct_1.nullable)((0, superstruct_1.type)({
-        executable: (0, superstruct_1.boolean)(),
-        owner: (0, superstruct_1.string)(),
-        lamports: (0, superstruct_1.number)(),
-        data: (0, superstruct_1.array)((0, superstruct_1.string)()),
-        rentEpoch: (0, superstruct_1.optional)((0, superstruct_1.number)()),
+const SimulatedTransactionResponseStruct = jsonRpcResultAndContext(pick({
+    err: nullable(union([pick({}), string()])),
+    logs: nullable(array(string())),
+    accounts: optional(nullable(array(nullable(pick({
+        executable: boolean(),
+        owner: string(),
+        lamports: number(),
+        data: array(string()),
+        rentEpoch: optional(number()),
     }))))),
-    unitsConsumed: (0, superstruct_1.optional)((0, superstruct_1.number)()),
+    unitsConsumed: optional(number()),
 }));
 //# sourceMappingURL=rpc.js.map

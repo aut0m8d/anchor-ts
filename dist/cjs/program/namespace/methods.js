@@ -1,22 +1,17 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.MethodsBuilder = exports.flattenPartialAccounts = exports.isPartialAccounts = exports.MethodsBuilderFactory = void 0;
-const accounts_resolver_js_1 = require("../accounts-resolver.js");
-const common_js_1 = require("../common.js");
-class MethodsBuilderFactory {
+import { AccountsResolver, } from "../accounts-resolver.js";
+import { translateAddress } from "../common.js";
+export class MethodsBuilderFactory {
     static build(provider, programId, idlIx, ixFn, txFn, rpcFn, simulateFn, viewFn, accountNamespace, idlTypes, customResolver) {
         return (...args) => new MethodsBuilder(args, ixFn, txFn, rpcFn, simulateFn, viewFn, provider, programId, idlIx, accountNamespace, idlTypes, customResolver);
     }
 }
-exports.MethodsBuilderFactory = MethodsBuilderFactory;
-function isPartialAccounts(partialAccount) {
+export function isPartialAccounts(partialAccount) {
     return (typeof partialAccount === "object" &&
         partialAccount !== null &&
         !("_bn" in partialAccount) // Ensures not a pubkey
     );
 }
-exports.isPartialAccounts = isPartialAccounts;
-function flattenPartialAccounts(partialAccounts, throwOnNull) {
+export function flattenPartialAccounts(partialAccounts, throwOnNull) {
     const toReturn = {};
     for (const accountName in partialAccounts) {
         const account = partialAccounts[accountName];
@@ -27,12 +22,11 @@ function flattenPartialAccounts(partialAccounts, throwOnNull) {
         }
         toReturn[accountName] = isPartialAccounts(account)
             ? flattenPartialAccounts(account, true)
-            : (0, common_js_1.translateAddress)(account);
+            : translateAddress(account);
     }
     return toReturn;
 }
-exports.flattenPartialAccounts = flattenPartialAccounts;
-class MethodsBuilder {
+export class MethodsBuilder {
     constructor(_args, _ixFn, _txFn, _rpcFn, _simulateFn, _viewFn, provider, programId, idlIx, accountNamespace, idlTypes, customResolver) {
         this._args = _args;
         this._ixFn = _ixFn;
@@ -46,7 +40,7 @@ class MethodsBuilder {
         this._preInstructions = [];
         this._postInstructions = [];
         this._resolveAccounts = true;
-        this._accountsResolver = new accounts_resolver_js_1.AccountsResolver(_args, this._accounts, provider, programId, idlIx, accountNamespace, idlTypes, customResolver);
+        this._accountsResolver = new AccountsResolver(_args, this._accounts, provider, programId, idlIx, accountNamespace, idlTypes, customResolver);
     }
     args(args) {
         this._args = args;
@@ -215,5 +209,4 @@ class MethodsBuilder {
         });
     }
 }
-exports.MethodsBuilder = MethodsBuilder;
 //# sourceMappingURL=methods.js.map

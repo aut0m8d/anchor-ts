@@ -1,20 +1,16 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.SystemCoder = void 0;
-const instruction_js_1 = require("./instruction.js");
-const accounts_js_1 = require("./accounts.js");
-const events_js_1 = require("./events.js");
-const types_js_1 = require("./types.js");
+import { SystemInstructionCoder } from "./instruction.js";
+import { SystemAccountsCoder } from "./accounts.js";
+import { SystemEventsCoder } from "./events.js";
+import { SystemTypesCoder } from "./types.js";
 /**
  * Coder for the System program.
  */
-class SystemCoder {
+export class SystemCoder {
     constructor(idl) {
-        this.instruction = new instruction_js_1.SystemInstructionCoder(idl);
-        this.accounts = new accounts_js_1.SystemAccountsCoder(idl);
-        this.events = new events_js_1.SystemEventsCoder(idl);
-        this.types = new types_js_1.SystemTypesCoder(idl);
+        this.instruction = new SystemInstructionCoder(idl);
+        this.accounts = new SystemAccountsCoder(idl);
+        this.events = new SystemEventsCoder(idl);
+        this.types = new SystemTypesCoder(idl);
     }
 }
-exports.SystemCoder = SystemCoder;
 //# sourceMappingURL=index.js.map

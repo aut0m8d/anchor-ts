@@ -1,33 +1,7 @@
-"use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.BorshEventCoder = void 0;
-const node_buffer_1 = require("node:buffer");
-const base64 = __importStar(require("../../utils/bytes/base64.js"));
-const idl_js_1 = require("./idl.js");
-class BorshEventCoder {
+import { Buffer } from "node:buffer";
+import * as base64 from "../../utils/bytes/base64.js";
+import { IdlCoder } from "./idl.js";
+export class BorshEventCoder {
     constructor(idl) {
         var _a;
         if (!idl.events) {
@@ -43,11 +17,11 @@ class BorshEventCoder {
             if (!typeDef) {
                 throw new Error(`Event not found: ${ev.name}`);
             }
-            return [ev.name, idl_js_1.IdlCoder.typeDefLayout({ typeDef, types })];
+            return [ev.name, IdlCoder.typeDefLayout({ typeDef, types })];
         });
         this.layouts = new Map(layouts);
         this.discriminators = new Map(((_a = idl.events) !== null && _a !== void 0 ? _a : []).map((ev) => [
-            base64.encode(node_buffer_1.Buffer.from(ev.discriminator)),
+            base64.encode(Buffer.from(ev.discriminator)),
             ev.name,
         ]));
     }
@@ -74,5 +48,4 @@ class BorshEventCoder {
         return { data, name: eventName };
     }
 }
-exports.BorshEventCoder = BorshEventCoder;
 //# sourceMappingURL=event.js.map

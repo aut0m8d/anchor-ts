@@ -1,21 +1,14 @@
-"use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.AccountsResolver = exports.isAccountsGeneric = void 0;
-const bn_js_1 = __importDefault(require("bn.js"));
-const web3_js_1 = require("@solana/web3.js");
-const idl_js_1 = require("../idl.js");
-const token_account_layout_1 = require("./token-account-layout");
-const index_js_1 = require("./index.js");
-const methods_1 = require("./namespace/methods");
-function isAccountsGeneric(accounts) {
-    return !(accounts instanceof web3_js_1.PublicKey);
+import BN from "bn.js";
+import { PublicKey } from "@solana/web3.js";
+import { isCompositeAccounts, } from "../idl.js";
+import { decodeTokenAccount } from "./token-account-layout";
+import { Program, translateAddress } from "./index.js";
+import { flattenPartialAccounts, isPartialAccounts, } from "./namespace/methods";
+export function isAccountsGeneric(accounts) {
+    return !(accounts instanceof PublicKey);
 }
-exports.isAccountsGeneric = isAccountsGeneric;
 // Populates a given accounts context with PDAs and common missing accounts.
-class AccountsResolver {
+export class AccountsResolver {
     constructor(_args, _accounts, _provider, _programId, _idlIx, accountNamespace, _idlTypes, _customResolver) {
         this._args = _args;
         this._accounts = _accounts;
@@ -78,20 +71,20 @@ class AccountsResolver {
             // Skip if the account isn't included (thus would be undefined)
             if (partialAccount === undefined)
                 continue;
-            if ((0, methods_1.isPartialAccounts)(partialAccount)) {
+            if (isPartialAccounts(partialAccount)) {
                 // is compound accounts, recurse one level deeper
-                if ((0, idl_js_1.isCompositeAccounts)(accountItem)) {
+                if (isCompositeAccounts(accountItem)) {
                     nestedAccountsGeneric[accountName] = this.resolveOptionalsHelper(partialAccount, accountItem["accounts"]);
                 }
                 else {
                     // Here we try our best to recover gracefully. If there are optionals we can't check, we will fail then.
-                    nestedAccountsGeneric[accountName] = (0, methods_1.flattenPartialAccounts)(partialAccount, true);
+                    nestedAccountsGeneric[accountName] = flattenPartialAccounts(partialAccount, true);
                 }
             }
             else {
                 // if not compound accounts, do null/optional check and proceed
                 if (partialAccount !== null) {
-                    nestedAccountsGeneric[accountName] = (0, index_js_1.translateAddress)(partialAccount);
+                    nestedAccountsGeneric[accountName] = translateAddress(partialAccount);
                 }
                 else if (accountItem["optional"]) {
                     nestedAccountsGeneric[accountName] = this._programId;
@@ -123,7 +116,7 @@ class AccountsResolver {
     resolveEventCpi(accounts, path = []) {
         for (const i in accounts) {
             const accountOrAccounts = accounts[i];
-            if ((0, idl_js_1.isCompositeAccounts)(accountOrAccounts)) {
+            if (isCompositeAccounts(accountOrAccounts)) {
                 this.resolveEventCpi(accountOrAccounts.accounts, [
                     ...path,
                     accountOrAccounts.name,
@@ -140,7 +133,7 @@ class AccountsResolver {
                 const currentPath = [...path, currentName];
                 const nextPath = [...path, nextName];
                 if (!this.get(currentPath)) {
-                    this.set(currentPath, web3_js_1.PublicKey.findProgramAddressSync([Buffer.from("__event_authority")], this._programId)[0]);
+                    this.set(currentPath, PublicKey.findProgramAddressSync([Buffer.from("__event_authority")], this._programId)[0]);
                 }
                 if (!this.get(nextPath)) {
                     this.set(nextPath, this._programId);
@@ -152,7 +145,7 @@ class AccountsResolver {
     resolveConst(accounts, path = []) {
         for (const accountOrAccounts of accounts) {
             const name = accountOrAccounts.name;
-            if ((0, idl_js_1.isCompositeAccounts)(accountOrAccounts)) {
+            if (isCompositeAccounts(accountOrAccounts)) {
                 this.resolveConst(accountOrAccounts.accounts, [...path, name]);
             }
             else {
@@ -169,7 +162,7 @@ class AccountsResolver {
                     }
                     // Set based on `address` field
                     if (account.address) {
-                        this.set([...path, name], (0, index_js_1.translateAddress)(account.address));
+                        this.set([...path, name], translateAddress(account.address));
                     }
                 }
             }
@@ -179,7 +172,7 @@ class AccountsResolver {
         let found = 0;
         for (const accountOrAccounts of accounts) {
             const name = accountOrAccounts.name;
-            if ((0, idl_js_1.isCompositeAccounts)(accountOrAccounts)) {
+            if (isCompositeAccounts(accountOrAccounts)) {
                 found += await this.resolvePdasAndRelations(accountOrAccounts.accounts, [...path, name]);
             }
             else {
@@ -197,7 +190,7 @@ class AccountsResolver {
                                 continue;
                             }
                             const programId = await this.parseProgramId(account, path);
-                            const [pubkey] = web3_js_1.PublicKey.findProgramAddressSync(seeds, programId);
+                            const [pubkey] = PublicKey.findProgramAddressSync(seeds, programId);
                             this.set([...path, name], pubkey);
                         }
                     }
@@ -228,7 +221,7 @@ class AccountsResolver {
         if (!buf) {
             throw new Error(`Program seed not resolved: ${account.name}`);
         }
-        return new web3_js_1.PublicKey(buf);
+        return new PublicKey(buf);
     }
     async toBuffer(seed, path = []) {
         switch (seed.kind) {
@@ -301,19 +294,19 @@ class AccountsResolver {
                 return Buffer.from([value]);
             case "u16":
             case "i16":
-                return new bn_js_1.default(value).toArrayLike(Buffer, "le", 2);
+                return new BN(value).toArrayLike(Buffer, "le", 2);
             case "u32":
             case "i32":
-                return new bn_js_1.default(value).toArrayLike(Buffer, "le", 4);
+                return new BN(value).toArrayLike(Buffer, "le", 4);
             case "u64":
             case "i64":
-                return new bn_js_1.default(value).toArrayLike(Buffer, "le", 8);
+                return new BN(value).toArrayLike(Buffer, "le", 8);
             case "u128":
             case "i128":
-                return new bn_js_1.default(value).toArrayLike(Buffer, "le", 16);
+                return new BN(value).toArrayLike(Buffer, "le", 16);
             case "u256":
             case "i256":
-                return new bn_js_1.default(value).toArrayLike(Buffer, "le", 32);
+                return new BN(value).toArrayLike(Buffer, "le", 32);
             case "string":
                 return Buffer.from(value);
             case "pubkey":
@@ -365,7 +358,6 @@ class AccountsResolver {
         return type;
     }
 }
-exports.AccountsResolver = AccountsResolver;
 // TODO: this should be configureable to avoid unnecessary requests.
 class AccountStore {
     constructor(_provider, accounts, programId) {
@@ -382,7 +374,7 @@ class AccountStore {
                 throw new Error(`Account not found: ${address}`);
             }
             if (name === "tokenAccount") {
-                const account = (0, token_account_layout_1.decodeTokenAccount)(accountInfo.data);
+                const account = decodeTokenAccount(accountInfo.data);
                 this._cache.set(address, account);
             }
             else {
@@ -401,9 +393,9 @@ class AccountStore {
     async getAccountsNs(programId) {
         const programIdStr = programId.toBase58();
         if (!this._idls[programIdStr]) {
-            const idl = await index_js_1.Program.fetchIdl(programId, this._provider);
+            const idl = await Program.fetchIdl(programId, this._provider);
             if (idl) {
-                const program = new index_js_1.Program(idl, programId, this._provider);
+                const program = new Program(idl, programId, this._provider);
                 this._idls[programIdStr] = program.account;
             }
         }

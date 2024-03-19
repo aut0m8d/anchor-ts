@@ -1,46 +1,17 @@
-"use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.decodeTokenAccount = void 0;
-const bn_js_1 = __importDefault(require("bn.js"));
-const BufferLayout = __importStar(require("buffer-layout"));
-const buffer_layout_1 = require("buffer-layout");
-const web3_js_1 = require("@solana/web3.js");
+import BN from "bn.js";
+import * as BufferLayout from "buffer-layout";
+import { Layout } from "buffer-layout";
+import { PublicKey } from "@solana/web3.js";
 function uint64(property) {
     return new WrappedLayout(BufferLayout.blob(8), (b) => u64.fromBuffer(b), (n) => n.toBuffer(), property);
 }
 function publicKey(property) {
-    return new WrappedLayout(BufferLayout.blob(32), (b) => new web3_js_1.PublicKey(b), (key) => key.toBuffer(), property);
+    return new WrappedLayout(BufferLayout.blob(32), (b) => new PublicKey(b), (key) => key.toBuffer(), property);
 }
 function coption(layout, property) {
     return new COptionLayout(layout, property);
 }
-class WrappedLayout extends buffer_layout_1.Layout {
+class WrappedLayout extends Layout {
     constructor(layout, decoder, encoder, property) {
         super(layout.span, property);
         this.layout = layout;
@@ -57,7 +28,7 @@ class WrappedLayout extends buffer_layout_1.Layout {
         return this.layout.getSpan(b, offset);
     }
 }
-class COptionLayout extends buffer_layout_1.Layout {
+class COptionLayout extends Layout {
     constructor(layout, property) {
         super(-1, property);
         this.layout = layout;
@@ -84,7 +55,7 @@ class COptionLayout extends buffer_layout_1.Layout {
         return this.layout.getSpan(b, offset + 4) + 4;
     }
 }
-class u64 extends bn_js_1.default {
+class u64 extends BN {
     /**
      * Convert to Buffer representation
      */
@@ -130,8 +101,7 @@ const TOKEN_ACCOUNT_LAYOUT = BufferLayout.struct([
     uint64("delegatedAmount"),
     coption(publicKey(), "closeAuthority"),
 ]);
-function decodeTokenAccount(b) {
+export function decodeTokenAccount(b) {
     return TOKEN_ACCOUNT_LAYOUT.decode(b);
 }
-exports.decodeTokenAccount = decodeTokenAccount;
 //# sourceMappingURL=token-account-layout.js.map

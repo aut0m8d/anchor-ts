@@ -1,33 +1,7 @@
-"use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.IdlCoder = void 0;
-const borsh = __importStar(require("@coral-xyz/borsh"));
-const idl_js_1 = require("../../idl.js");
-const error_js_1 = require("../../error.js");
-class IdlCoder {
+import * as borsh from "@coral-xyz/borsh";
+import { handleDefinedFields, } from "../../idl.js";
+import { IdlError } from "../../error.js";
+export class IdlCoder {
     static fieldLayout(field, types = [], genericArgs) {
         const fieldName = field.name;
         switch (field.type) {
@@ -99,12 +73,12 @@ class IdlCoder {
                 }
                 if ("defined" in field.type) {
                     if (!types) {
-                        throw new error_js_1.IdlError("User defined types not provided");
+                        throw new IdlError("User defined types not provided");
                     }
                     const definedName = field.type.defined.name;
                     const typeDef = types.find((t) => t.name === definedName);
                     if (!typeDef) {
-                        throw new error_js_1.IdlError(`Type not found: ${field.name}`);
+                        throw new IdlError(`Type not found: ${field.name}`);
                     }
                     return IdlCoder.typeDefLayout({
                         typeDef,
@@ -116,11 +90,11 @@ class IdlCoder {
                 if ("generic" in field.type) {
                     const genericArg = genericArgs === null || genericArgs === void 0 ? void 0 : genericArgs.at(0);
                     if ((genericArg === null || genericArg === void 0 ? void 0 : genericArg.kind) !== "type") {
-                        throw new error_js_1.IdlError(`Invalid generic field: ${field.name}`);
+                        throw new IdlError(`Invalid generic field: ${field.name}`);
                     }
                     return IdlCoder.fieldLayout({ ...field, type: genericArg.type });
                 }
-                throw new error_js_1.IdlError(`Not yet implemented: ${JSON.stringify(field.type)}`);
+                throw new IdlError(`Not yet implemented: ${JSON.stringify(field.type)}`);
             }
         }
     }
@@ -130,7 +104,7 @@ class IdlCoder {
     static typeDefLayout({ typeDef, types, name, genericArgs, }) {
         switch (typeDef.type.kind) {
             case "struct": {
-                const fieldLayouts = (0, idl_js_1.handleDefinedFields)(typeDef.type.fields, () => [], (fields) => fields.map((f) => {
+                const fieldLayouts = handleDefinedFields(typeDef.type.fields, () => [], (fields) => fields.map((f) => {
                     const genArgs = genericArgs
                         ? IdlCoder.resolveGenericArgs({
                             type: f.type,
@@ -153,7 +127,7 @@ class IdlCoder {
             }
             case "enum": {
                 const variants = typeDef.type.variants.map((variant) => {
-                    const fieldLayouts = (0, idl_js_1.handleDefinedFields)(variant.fields, () => [], (fields) => fields.map((f) => {
+                    const fieldLayouts = handleDefinedFields(variant.fields, () => [], (fields) => fields.map((f) => {
                         const genArgs = genericArgs
                             ? IdlCoder.resolveGenericArgs({
                                 type: f.type,
@@ -246,7 +220,7 @@ class IdlCoder {
                 if ("defined" in ty) {
                     const typeDef = (_a = idl.types) === null || _a === void 0 ? void 0 : _a.find((t) => t.name === ty.defined.name);
                     if (!typeDef) {
-                        throw new error_js_1.IdlError(`Type not found: ${JSON.stringify(ty)}`);
+                        throw new IdlError(`Type not found: ${JSON.stringify(ty)}`);
                     }
                     const typeSize = (type) => {
                         const genArgs = genericArgs !== null && genericArgs !== void 0 ? genericArgs : ty.defined.generics;
@@ -261,11 +235,11 @@ class IdlCoder {
                     };
                     switch (typeDef.type.kind) {
                         case "struct": {
-                            return (0, idl_js_1.handleDefinedFields)(typeDef.type.fields, () => [0], (fields) => fields.map((f) => typeSize(f.type)), (fields) => fields.map((f) => typeSize(f))).reduce((acc, size) => acc + size, 0);
+                            return handleDefinedFields(typeDef.type.fields, () => [0], (fields) => fields.map((f) => typeSize(f.type)), (fields) => fields.map((f) => typeSize(f))).reduce((acc, size) => acc + size, 0);
                         }
                         case "enum": {
                             const variantSizes = typeDef.type.variants.map((variant) => {
-                                return (0, idl_js_1.handleDefinedFields)(variant.fields, () => [0], (fields) => fields.map((f) => typeSize(f.type)), (fields) => fields.map((f) => typeSize(f))).reduce((acc, size) => acc + size, 0);
+                                return handleDefinedFields(variant.fields, () => [0], (fields) => fields.map((f) => typeSize(f.type)), (fields) => fields.map((f) => typeSize(f))).reduce((acc, size) => acc + size, 0);
                             });
                             return Math.max(...variantSizes) + 1;
                         }
@@ -277,7 +251,7 @@ class IdlCoder {
                 if ("generic" in ty) {
                     const genericArg = genericArgs === null || genericArgs === void 0 ? void 0 : genericArgs.at(0);
                     if ((genericArg === null || genericArg === void 0 ? void 0 : genericArg.kind) !== "type") {
-                        throw new error_js_1.IdlError(`Invalid generic: ${ty.generic}`);
+                        throw new IdlError(`Invalid generic: ${ty.generic}`);
                     }
                     return IdlCoder.typeSize(genericArg.type, idl, genericArgs);
                 }
@@ -297,7 +271,7 @@ class IdlCoder {
             }
         }
         if (typeof len !== "number") {
-            throw new error_js_1.IdlError("Generic array length did not resolve");
+            throw new IdlError("Generic array length did not resolve");
         }
         return len;
     }
@@ -416,5 +390,4 @@ class IdlCoder {
         return null;
     }
 }
-exports.IdlCoder = IdlCoder;
 //# sourceMappingURL=idl.js.map

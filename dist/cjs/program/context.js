@@ -1,7 +1,4 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.splitArgsAndCtx = void 0;
-function splitArgsAndCtx(idlIx, args) {
+export function splitArgsAndCtx(idlIx, args) {
     var _a, _b;
     let options = {};
     const inputLen = idlIx.args ? idlIx.args.length : 0;
@@ -13,5 +10,4 @@ function splitArgsAndCtx(idlIx, args) {
     }
     return [args, options];
 }
-exports.splitArgsAndCtx = splitArgsAndCtx;
 //# sourceMappingURL=context.js.map

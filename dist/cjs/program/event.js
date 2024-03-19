@@ -1,11 +1,8 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.EventParser = exports.EventManager = void 0;
 const PROGRAM_LOG = "Program log: ";
 const PROGRAM_DATA = "Program data: ";
 const PROGRAM_LOG_START_INDEX = PROGRAM_LOG.length;
 const PROGRAM_DATA_START_INDEX = PROGRAM_DATA.length;
-class EventManager {
+export class EventManager {
     constructor(programId, provider, coder) {
         this._programId = programId;
         this._provider = provider;
@@ -79,8 +76,7 @@ class EventManager {
         }
     }
 }
-exports.EventManager = EventManager;
-class EventParser {
+export class EventParser {
     constructor(programId, coder) {
         this.coder = coder;
         this.programId = programId;
@@ -168,7 +164,6 @@ class EventParser {
         }
     }
 }
-exports.EventParser = EventParser;
 // Stack frame execution context, allowing one to track what program is
 // executing for a given log.
 class ExecutionContext {

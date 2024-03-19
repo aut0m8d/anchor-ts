@@ -1,15 +1,12 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.getProvider = exports.setProvider = exports.AnchorProvider = void 0;
-const web3_js_1 = require("@solana/web3.js");
-const index_js_1 = require("./utils/bytes/index.js");
-const common_js_1 = require("./utils/common.js");
-const rpc_js_1 = require("./utils/rpc.js");
+import { Connection, SendTransactionError, } from "@solana/web3.js";
+import { bs58 } from "./utils/bytes/index.js";
+import { isBrowser, isVersionedTransaction } from "./utils/common.js";
+import { simulateTransaction, } from "./utils/rpc.js";
 /**
  * The network and wallet context used to send transactions paid for and signed
  * by the provider.
  */
-class AnchorProvider {
+export class AnchorProvider {
     /**
      * @param connection The cluster connection where the program is deployed.
      * @param wallet     The wallet used to pay for and sign all transactions.
@@ -36,10 +33,10 @@ class AnchorProvider {
      * (This api is for Node only.)
      */
     static local(url, opts = AnchorProvider.defaultOptions()) {
-        if (common_js_1.isBrowser) {
+        if (isBrowser) {
             throw new Error(`Provider local is not available on browser.`);
         }
-        const connection = new web3_js_1.Connection(url !== null && url !== void 0 ? url : "http://127.0.0.1:8899", opts.preflightCommitment);
+        const connection = new Connection(url !== null && url !== void 0 ? url : "http://127.0.0.1:8899", opts.preflightCommitment);
         const NodeWallet = require("./nodewallet.js").default;
         const wallet = NodeWallet.local();
         return new AnchorProvider(connection, wallet, opts);
@@ -51,7 +48,7 @@ class AnchorProvider {
      * (This api is for Node only.)
      */
     static env() {
-        if (common_js_1.isBrowser) {
+        if (isBrowser) {
             throw new Error(`Provider env is not available on browser.`);
         }
         const process = require("process");
@@ -60,7 +57,7 @@ class AnchorProvider {
             throw new Error("ANCHOR_PROVIDER_URL is not defined");
         }
         const options = AnchorProvider.defaultOptions();
-        const connection = new web3_js_1.Connection(url, options.commitment);
+        const connection = new Connection(url, options.commitment);
         const NodeWallet = require("./nodewallet.js").default;
         const wallet = NodeWallet.local();
         return new AnchorProvider(connection, wallet, options);
@@ -77,7 +74,7 @@ class AnchorProvider {
         if (opts === undefined) {
             opts = this.opts;
         }
-        if ((0, common_js_1.isVersionedTransaction)(tx)) {
+        if (isVersionedTransaction(tx)) {
             if (signers) {
                 tx.sign(signers);
             }
@@ -104,7 +101,7 @@ class AnchorProvider {
                 // (the json RPC does not support any shorter than "confirmed" for 'getTransaction')
                 // because that will see the tx sent with `sendAndConfirmRawTransaction` no matter which
                 // commitment `sendAndConfirmRawTransaction` used
-                const txSig = index_js_1.bs58.encode((0, common_js_1.isVersionedTransaction)(tx)
+                const txSig = bs58.encode(isVersionedTransaction(tx)
                     ? ((_b = tx.signatures) === null || _b === void 0 ? void 0 : _b[0]) || new Uint8Array()
                     : (_c = tx.signature) !== null && _c !== void 0 ? _c : new Uint8Array());
                 const failedTx = await this.connection.getTransaction(txSig, {
@@ -115,7 +112,7 @@ class AnchorProvider {
                 }
                 else {
                     const logs = (_d = failedTx.meta) === null || _d === void 0 ? void 0 : _d.logMessages;
-                    throw !logs ? err : new web3_js_1.SendTransactionError(err.message, logs);
+                    throw !logs ? err : new SendTransactionError(err.message, logs);
                 }
             }
             else {
@@ -138,7 +135,7 @@ class AnchorProvider {
         const recentBlockhash = (await this.connection.getLatestBlockhash(opts.preflightCommitment)).blockhash;
         let txs = txWithSigners.map((r) => {
             var _a, _b;
-            if ((0, common_js_1.isVersionedTransaction)(r.tx)) {
+            if (isVersionedTransaction(r.tx)) {
                 let tx = r.tx;
                 if (r.signers) {
                     tx.sign(r.signers);
@@ -172,7 +169,7 @@ class AnchorProvider {
                     // (the json RPC does not support any shorter than "confirmed" for 'getTransaction')
                     // because that will see the tx sent with `sendAndConfirmRawTransaction` no matter which
                     // commitment `sendAndConfirmRawTransaction` used
-                    const txSig = index_js_1.bs58.encode((0, common_js_1.isVersionedTransaction)(tx)
+                    const txSig = bs58.encode(isVersionedTransaction(tx)
                         ? ((_a = tx.signatures) === null || _a === void 0 ? void 0 : _a[0]) || new Uint8Array()
                         : (_b = tx.signature) !== null && _b !== void 0 ? _b : new Uint8Array());
                     const failedTx = await this.connection.getTransaction(txSig, {
@@ -183,7 +180,7 @@ class AnchorProvider {
                     }
                     else {
                         const logs = (_c = failedTx.meta) === null || _c === void 0 ? void 0 : _c.logMessages;
-                        throw !logs ? err : new web3_js_1.SendTransactionError(err.message, logs);
+                        throw !logs ? err : new SendTransactionError(err.message, logs);
                     }
                 }
                 else {
@@ -206,7 +203,7 @@ class AnchorProvider {
     async simulate(tx, signers, commitment, includeAccounts) {
         let recentBlockhash = (await this.connection.getLatestBlockhash(commitment !== null && commitment !== void 0 ? commitment : this.connection.commitment)).blockhash;
         let result;
-        if ((0, common_js_1.isVersionedTransaction)(tx)) {
+        if (isVersionedTransaction(tx)) {
             if (signers && signers.length > 0) {
                 tx.sign(signers);
                 tx = await this.wallet.signTransaction(tx);
@@ -221,7 +218,7 @@ class AnchorProvider {
             if (signers && signers.length > 0) {
                 tx = await this.wallet.signTransaction(tx);
             }
-            result = await (0, rpc_js_1.simulateTransaction)(this.connection, tx, signers, commitment, includeAccounts);
+            result = await simulateTransaction(this.connection, tx, signers, commitment, includeAccounts);
         }
         if (result.value.err) {
             throw new SimulateError(result.value);
@@ -229,7 +226,6 @@ class AnchorProvider {
         return result.value;
     }
 }
-exports.AnchorProvider = AnchorProvider;
 class SimulateError extends Error {
     constructor(simulationResponse, message) {
         super(message);
@@ -258,20 +254,18 @@ class ConfirmError extends Error {
 /**
  * Sets the default provider on the client.
  */
-function setProvider(provider) {
+export function setProvider(provider) {
     _provider = provider;
 }
-exports.setProvider = setProvider;
 /**
  * Returns the default provider being used by the client.
  */
-function getProvider() {
+export function getProvider() {
     if (_provider === null) {
         return AnchorProvider.local();
     }
     return _provider;
 }
-exports.getProvider = getProvider;
 // Global provider used as the default when a provider is not given.
 let _provider = null;
 //# sourceMappingURL=provider.js.map

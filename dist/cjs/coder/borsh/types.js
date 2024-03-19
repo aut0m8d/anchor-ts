@@ -1,12 +1,9 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.BorshTypesCoder = void 0;
-const node_buffer_1 = require("node:buffer");
-const idl_js_1 = require("./idl.js");
+import { Buffer } from "node:buffer";
+import { IdlCoder } from "./idl.js";
 /**
  * Encodes and decodes user-defined types.
  */
-class BorshTypesCoder {
+export class BorshTypesCoder {
     constructor(idl) {
         const types = idl.types;
         if (!types) {
@@ -17,12 +14,12 @@ class BorshTypesCoder {
             .filter((ty) => !ty.generics)
             .map((ty) => [
             ty.name,
-            idl_js_1.IdlCoder.typeDefLayout({ typeDef: ty, types }),
+            IdlCoder.typeDefLayout({ typeDef: ty, types }),
         ]);
         this.typeLayouts = new Map(layouts);
     }
     encode(name, type) {
-        const buffer = node_buffer_1.Buffer.alloc(1000); // TODO: use a tighter buffer.
+        const buffer = Buffer.alloc(1000); // TODO: use a tighter buffer.
         const layout = this.typeLayouts.get(name);
         if (!layout) {
             throw new Error(`Unknown type: ${name}`);
@@ -38,5 +35,4 @@ class BorshTypesCoder {
         return layout.decode(data);
     }
 }
-exports.BorshTypesCoder = BorshTypesCoder;
 //# sourceMappingURL=types.js.map

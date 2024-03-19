@@ -1,32 +1,7 @@
-"use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const toml = __importStar(require("toml"));
-const snake_case_1 = require("snake-case");
-const index_js_1 = require("./program/index.js");
-const common_js_1 = require("./utils/common.js");
+import * as toml from "toml";
+import { snakeCase } from "snake-case";
+import { Program } from "./program/index.js";
+import { isBrowser } from "./utils/common.js";
 /**
  * The `workspace` namespace provides a convenience API to automatically
  * search for and deserialize [[Program]] objects defined by compiled IDLs
@@ -37,13 +12,13 @@ const common_js_1 = require("./utils/common.js");
 const workspace = new Proxy({}, {
     get(workspaceCache, programName) {
         var _a, _b;
-        if (common_js_1.isBrowser) {
+        if (isBrowser) {
             throw new Error("Workspaces aren't available in the browser");
         }
         // Converting `programName` to snake_case enables the ability to use any
         // of the following to access the workspace program:
         // `workspace.myProgram`, `workspace.MyProgram`, `workspace["my-program"]`...
-        programName = (0, snake_case_1.snakeCase)(programName);
+        programName = snakeCase(programName);
         // Check whether the program name contains any digits
         if (/\d/.test(programName)) {
             // Numbers cannot be properly converted from camelCase to snake_case,
@@ -88,9 +63,9 @@ const workspace = new Proxy({}, {
             }
             programId = idl.address;
         }
-        workspaceCache[programName] = new index_js_1.Program(idl, programId);
+        workspaceCache[programName] = new Program(idl, programId);
         return workspaceCache[programName];
     },
 });
-exports.default = workspace;
+export default workspace;
 //# sourceMappingURL=workspace.js.map

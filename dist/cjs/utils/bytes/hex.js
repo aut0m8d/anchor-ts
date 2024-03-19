@@ -1,12 +1,8 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.decode = exports.encode = void 0;
-const node_buffer_1 = require("node:buffer");
-function encode(data) {
+import { Buffer } from "node:buffer";
+export function encode(data) {
     return data.reduce((str, byte) => str + byte.toString(16).padStart(2, "0"), "0x");
 }
-exports.encode = encode;
-function decode(data) {
+export function decode(data) {
     if (data.indexOf("0x") === 0) {
         data = data.substr(2);
     }
@@ -15,9 +11,8 @@ function decode(data) {
     }
     let key = data.match(/.{2}/g);
     if (key === null) {
-        return node_buffer_1.Buffer.from([]);
+        return Buffer.from([]);
     }
-    return node_buffer_1.Buffer.from(key.map((byte) => parseInt(byte, 16)));
+    return Buffer.from(key.map((byte) => parseInt(byte, 16)));
 }
-exports.decode = decode;
 //# sourceMappingURL=hex.js.map

@@ -1,8 +1,6 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const idl_1 = require("../../coder/borsh/idl");
-const base64_1 = require("../../utils/bytes/base64");
-class ViewFactory {
+import { IdlCoder } from "../../coder/borsh/idl";
+import { decode } from "../../utils/bytes/base64";
+export default class ViewFactory {
     static build(programId, idlIx, simulateFn, idl) {
         const isWritable = idlIx.accounts.find((a) => a.writable);
         const hasReturn = !!idlIx.returns;
@@ -15,16 +13,15 @@ class ViewFactory {
             if (!returnLog) {
                 throw new Error("View expected return log");
             }
-            let returnData = (0, base64_1.decode)(returnLog.slice(returnPrefix.length));
+            let returnData = decode(returnLog.slice(returnPrefix.length));
             let returnType = idlIx.returns;
             if (!returnType) {
                 throw new Error("View expected return type");
             }
-            const coder = idl_1.IdlCoder.fieldLayout({ type: returnType }, idl.types);
+            const coder = IdlCoder.fieldLayout({ type: returnType }, idl.types);
             return coder.decode(returnData);
         };
         return view;
     }
 }
-exports.default = ViewFactory;
 //# sourceMappingURL=views.js.map

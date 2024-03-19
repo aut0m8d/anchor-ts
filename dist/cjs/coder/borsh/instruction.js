@@ -1,53 +1,24 @@
-"use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.BorshInstructionCoder = void 0;
-const bs58_1 = __importDefault(require("bs58"));
-const node_buffer_1 = require("node:buffer");
-const borsh = __importStar(require("@coral-xyz/borsh"));
-const idl_js_1 = require("../../idl.js");
-const idl_js_2 = require("./idl.js");
-const index_js_1 = require("../index.js");
+import bs58 from "bs58";
+import { Buffer } from "node:buffer";
+import * as borsh from "@coral-xyz/borsh";
+import { handleDefinedFields, } from "../../idl.js";
+import { IdlCoder } from "./idl.js";
+import { DISCRIMINATOR_SIZE } from "../index.js";
 /**
  * Encodes and decodes program instructions.
  */
-class BorshInstructionCoder {
+export class BorshInstructionCoder {
     constructor(idl) {
         this.idl = idl;
         const ixLayouts = idl.instructions.map((ix) => {
             const name = ix.name;
-            const fieldLayouts = ix.args.map((arg) => idl_js_2.IdlCoder.fieldLayout(arg, idl.types));
+            const fieldLayouts = ix.args.map((arg) => IdlCoder.fieldLayout(arg, idl.types));
             const layout = borsh.struct(fieldLayouts, name);
             return [name, { discriminator: ix.discriminator, layout }];
         });
         this.ixLayouts = new Map(ixLayouts);
         const sighashLayouts = ixLayouts.map(([name, { discriminator, layout }]) => {
-            return [bs58_1.default.encode(discriminator), { name, layout }];
+            return [bs58.encode(discriminator), { name, layout }];
         });
         this.sighashLayouts = new Map(sighashLayouts);
     }
@@ -55,25 +26,25 @@ class BorshInstructionCoder {
      * Encodes a program instruction.
      */
     encode(ixName, ix) {
-        const buffer = node_buffer_1.Buffer.alloc(1000); // TODO: use a tighter buffer.
+        const buffer = Buffer.alloc(1000); // TODO: use a tighter buffer.
         const encoder = this.ixLayouts.get(ixName);
         if (!encoder) {
             throw new Error(`Unknown method: ${ixName}`);
         }
         const len = encoder.layout.encode(ix, buffer);
         const data = buffer.slice(0, len);
-        return node_buffer_1.Buffer.concat([node_buffer_1.Buffer.from(encoder.discriminator), data]);
+        return Buffer.concat([Buffer.from(encoder.discriminator), data]);
     }
     /**
      * Decodes a program instruction.
      */
     decode(ix, encoding = "hex") {
         if (typeof ix === "string") {
-            ix = encoding === "hex" ? node_buffer_1.Buffer.from(ix, "hex") : bs58_1.default.decode(ix);
+            ix = encoding === "hex" ? Buffer.from(ix, "hex") : bs58.decode(ix);
         }
-        const disc = ix.slice(0, index_js_1.DISCRIMINATOR_SIZE);
-        const data = ix.slice(index_js_1.DISCRIMINATOR_SIZE);
-        const decoder = this.sighashLayouts.get(bs58_1.default.encode(disc));
+        const disc = ix.slice(0, DISCRIMINATOR_SIZE);
+        const data = ix.slice(DISCRIMINATOR_SIZE);
+        const decoder = this.sighashLayouts.get(bs58.encode(disc));
         if (!decoder) {
             return null;
         }
@@ -89,7 +60,6 @@ class BorshInstructionCoder {
         return InstructionFormatter.format(ix, accountMetas, this.idl);
     }
 }
-exports.BorshInstructionCoder = BorshInstructionCoder;
 class InstructionFormatter {
     static format(ix, accountMetas, idl) {
         const idlIx = idl.instructions.find((i) => ix.name === i.name);
@@ -193,7 +163,7 @@ class InstructionFormatter {
         switch (typeDef.type.kind) {
             case "struct": {
                 return ("{ " +
-                    (0, idl_js_1.handleDefinedFields)(typeDef.type.fields, () => "", (fields) => {
+                    handleDefinedFields(typeDef.type.fields, () => "", (fields) => {
                         return Object.entries(data)
                             .map(([key, val]) => {
                             const field = fields.find((f) => f.name === key);
@@ -223,7 +193,7 @@ class InstructionFormatter {
                     throw new Error(`Unable to find variant: ${variantName}`);
                 }
                 const enumValue = data[variantName];
-                return (0, idl_js_1.handleDefinedFields)(variant.fields, () => variantName, (fields) => {
+                return handleDefinedFields(variant.fields, () => variantName, (fields) => {
                     const namedFields = Object.keys(enumValue)
                         .map((f) => {
                         const fieldData = enumValue[f];

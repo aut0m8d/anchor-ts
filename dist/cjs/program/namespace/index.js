@@ -1,22 +1,14 @@
-"use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.MethodsBuilderFactory = exports.AccountClient = void 0;
-const instruction_js_1 = __importDefault(require("./instruction.js"));
-const transaction_js_1 = __importDefault(require("./transaction.js"));
-const rpc_js_1 = __importDefault(require("./rpc.js"));
-const account_js_1 = __importDefault(require("./account.js"));
-const simulate_js_1 = __importDefault(require("./simulate.js"));
-const common_js_1 = require("../common.js");
-const methods_1 = require("./methods");
-const views_1 = __importDefault(require("./views"));
-var account_js_2 = require("./account.js");
-Object.defineProperty(exports, "AccountClient", { enumerable: true, get: function () { return account_js_2.AccountClient; } });
-var methods_2 = require("./methods");
-Object.defineProperty(exports, "MethodsBuilderFactory", { enumerable: true, get: function () { return methods_2.MethodsBuilderFactory; } });
-class NamespaceFactory {
+import InstructionFactory from "./instruction.js";
+import TransactionFactory from "./transaction.js";
+import RpcFactory from "./rpc.js";
+import AccountFactory from "./account.js";
+import SimulateFactory from "./simulate.js";
+import { parseIdlErrors } from "../common.js";
+import { MethodsBuilderFactory } from "./methods";
+import ViewFactory from "./views";
+export { AccountClient } from "./account.js";
+export { MethodsBuilderFactory } from "./methods";
+export default class NamespaceFactory {
     /**
      * Generates all namespaces for a given program.
      */
@@ -27,17 +19,17 @@ class NamespaceFactory {
         const simulate = {};
         const methods = {};
         const view = {};
-        const idlErrors = (0, common_js_1.parseIdlErrors)(idl);
+        const idlErrors = parseIdlErrors(idl);
         const account = idl.accounts
-            ? account_js_1.default.build(idl, coder, programId, provider)
+            ? AccountFactory.build(idl, coder, programId, provider)
             : {};
         idl.instructions.forEach((idlIx) => {
-            const ixItem = instruction_js_1.default.build(idlIx, (ixName, ix) => coder.instruction.encode(ixName, ix), programId);
-            const txItem = transaction_js_1.default.build(idlIx, ixItem);
-            const rpcItem = rpc_js_1.default.build(idlIx, txItem, idlErrors, provider);
-            const simulateItem = simulate_js_1.default.build(idlIx, txItem, idlErrors, provider, coder, programId, idl);
-            const viewItem = views_1.default.build(programId, idlIx, simulateItem, idl);
-            const methodItem = methods_1.MethodsBuilderFactory.build(provider, programId, idlIx, ixItem, txItem, rpcItem, simulateItem, viewItem, account, idl.types || [], getCustomResolver === null || getCustomResolver === void 0 ? void 0 : getCustomResolver(idlIx));
+            const ixItem = InstructionFactory.build(idlIx, (ixName, ix) => coder.instruction.encode(ixName, ix), programId);
+            const txItem = TransactionFactory.build(idlIx, ixItem);
+            const rpcItem = RpcFactory.build(idlIx, txItem, idlErrors, provider);
+            const simulateItem = SimulateFactory.build(idlIx, txItem, idlErrors, provider, coder, programId, idl);
+            const viewItem = ViewFactory.build(programId, idlIx, simulateItem, idl);
+            const methodItem = MethodsBuilderFactory.build(provider, programId, idlIx, ixItem, txItem, rpcItem, simulateItem, viewItem, account, idl.types || [], getCustomResolver === null || getCustomResolver === void 0 ? void 0 : getCustomResolver(idlIx));
             const name = idlIx.name;
             instruction[name] = ixItem;
             transaction[name] = txItem;
@@ -59,5 +51,4 @@ class NamespaceFactory {
         ];
     }
 }
-exports.default = NamespaceFactory;
 //# sourceMappingURL=index.js.map

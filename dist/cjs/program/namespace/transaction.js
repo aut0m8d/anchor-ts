@@ -1,13 +1,11 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const web3_js_1 = require("@solana/web3.js");
-const context_js_1 = require("../context.js");
-class TransactionFactory {
+import { Transaction } from "@solana/web3.js";
+import { splitArgsAndCtx } from "../context.js";
+export default class TransactionFactory {
     static build(idlIx, ixFn) {
         const txFn = (...args) => {
             var _a, _b, _c;
-            const [, ctx] = (0, context_js_1.splitArgsAndCtx)(idlIx, [...args]);
-            const tx = new web3_js_1.Transaction();
+            const [, ctx] = splitArgsAndCtx(idlIx, [...args]);
+            const tx = new Transaction();
             if (ctx.preInstructions && ctx.instructions) {
                 throw new Error("instructions is deprecated, use preInstructions");
             }
@@ -20,5 +18,4 @@ class TransactionFactory {
         return txFn;
     }
 }
-exports.default = TransactionFactory;
 //# sourceMappingURL=transaction.js.map

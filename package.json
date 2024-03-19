@@ -4,9 +4,9 @@
   "description": "Anchor client",
   "module": "./dist/esm/index.js",
   "main": "./dist/esm/index.js",
-  "browser": "./dist/browser/index.js",
+  "browser": "./dist/esm/index.js",
   "license": "(MIT OR Apache-2.0)",
-  "types": "dist/cjs/index.d.ts",
+  "types": "dist/esm/index.d.ts",
   "homepage": "https://github.com/coral-xyz/anchor#readme",
   "bugs": {
     "url": "https://github.com/coral-xyz/anchor/issues"
@@ -22,13 +22,12 @@
     "node": ">=11"
   },
   "scripts": {
-    "build": "rimraf dist/ && yarn build:node && yarn build:browser",
-    "build:node": "cd ../borsh && yarn build && cd ../anchor && tsc && tsc -p tsconfig.cjs.json",
-    "build:browser": "rollup --config",
+    "build": "rimraf dist/ && pnpm build:node",
+    "build:node": "tsc && tsc -p tsconfig.cjs.json",
     "lint:fix": "prettier src/** tests/** -w",
     "lint": "prettier src/** tests/** --check",
     "watch": "tsc -p tsconfig.cjs.json --watch",
-    "prepublishOnly": "yarn build",
+    "prepublishOnly": "pnpm build",
     "docs": "typedoc --excludePrivate --includeVersion --out ../../../docs/src/.vuepress/dist/ts/ --readme none src/index.ts",
     "test": "jest tests --detectOpenHandles"
   },

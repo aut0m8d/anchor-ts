@@ -1,19 +1,14 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.IDL = exports.coder = exports.program = void 0;
-const web3_js_1 = require("@solana/web3.js");
-const index_js_1 = require("../program/index.js");
-const index_js_2 = require("../coder/system/index.js");
-const SYSTEM_PROGRAM_ID = new web3_js_1.PublicKey("11111111111111111111111111111111");
-function program(provider) {
-    return new index_js_1.Program(exports.IDL, SYSTEM_PROGRAM_ID, provider, coder());
+import { PublicKey } from "@solana/web3.js";
+import { Program } from "../program/index.js";
+import { SystemCoder } from "../coder/system/index.js";
+const SYSTEM_PROGRAM_ID = new PublicKey("11111111111111111111111111111111");
+export function program(provider) {
+    return new Program(IDL, SYSTEM_PROGRAM_ID, provider, coder());
 }
-exports.program = program;
-function coder() {
-    return new index_js_2.SystemCoder(exports.IDL);
+export function coder() {
+    return new SystemCoder(IDL);
 }
-exports.coder = coder;
-exports.IDL = {
+export const IDL = {
     address: "11111111111111111111111111111111",
     metadata: {
         name: "systemProgram",
