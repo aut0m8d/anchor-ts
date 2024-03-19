@@ -12,6 +12,7 @@ import {
   VersionedTransaction,
   RpcResponseAndContext,
 } from "@solana/web3.js";
+import * as process from "node:process";
 import { bs58 } from "./utils/bytes/index.js";
 import { isBrowser, isVersionedTransaction } from "./utils/common.js";
 import {
@@ -111,7 +112,6 @@ export class AnchorProvider implements Provider {
       throw new Error(`Provider env is not available on browser.`);
     }
 
-    const process = require("node:process");
     const url = process.env.ANCHOR_PROVIDER_URL;
     if (url === undefined) {
       throw new Error("ANCHOR_PROVIDER_URL is not defined");
