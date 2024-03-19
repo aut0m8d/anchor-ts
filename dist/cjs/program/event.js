@@ -1,4 +1,4 @@
-import * as assert from "assert";
+import * as assert from "node:assert";
 const PROGRAM_LOG = "Program log: ";
 const PROGRAM_DATA = "Program data: ";
 const PROGRAM_LOG_START_INDEX = PROGRAM_LOG.length;

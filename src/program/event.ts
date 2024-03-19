@@ -1,5 +1,5 @@
 import { PublicKey } from "@solana/web3.js";
-import * as assert from "assert";
+import * as assert from "node:assert";
 import { IdlEvent, IdlEventField } from "../idl.js";
 import { Coder } from "../coder/index.js";
 import { DecodeType } from "./namespace/types.js";
